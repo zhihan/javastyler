@@ -4,11 +4,20 @@ import java.util.regex.Matcher
 import java.util.regex.Pattern
 import java.util.List
 
+/**
+ * Single line styles 
+ * 
+ * The styles that can be checked and enforced using a single line of code. 
+ */
 abstract class Diagnostics {
     abstract Boolean passed()
     abstract String message()
 }
 
+/**
+ * Diagnostics 
+ * Either pass or fail.
+ */
 class Pass extends Diagnostics {
     Boolean passed() {
         return true
@@ -30,7 +39,9 @@ class Fail extends Diagnostics {
     }
 }
 
-
+/**
+  * Single-line rules
+  */
 interface SingleLineRule {
     /** Analyze a line and provide a diagnostics */
     Diagnostics analyze(String line)
@@ -43,7 +54,8 @@ interface SingleLineRule {
 } 
 
 /**
-  * Line Width
+  * Line Width rule
+  *
   * A line in the source file should not exceeds 80 or 100 characters. 
   * No fix provided.
   */
@@ -67,8 +79,30 @@ class LineWidthRule implements SingleLineRule {
     }
 }
 
+class TrailingSpaceRule implements SingleLineRule {
+    Diagnostics analyze(String line) {
+        if (Character.isWhitespace(line.charAt(line.size() - 1))) {
+            return new Fail(msg: "Trailing whitespace found")
+        } else {
+            return new Pass()
+        }
+    }
+
+    Boolean canFix(String line) {
+        return true
+    }
+
+    String fix(String line) {
+        int i = line.size() - 1
+        while (Character.isWhitespace(line.charAt(i)) && i > 0) {
+            i = i - 1;
+        }
+        line.substring(0, i + 1)
+    }
+}
+
 /**
- * A class to provide maskng for quoted strings. For example, 
+ * A helper class to provide maskng for quoted strings. For example, 
  * some rules such as the parenthesis rule does not apply to parenthesis
  * in a quoted string.
  */
@@ -88,7 +122,7 @@ class QuoteMask {
     static Pattern doubleQuoteString = ~/"([^"]|\")*"/
     static Pattern singleQuoteString = ~/'([^']|\')*'/
 
-    static QuoteMask quote(String line, Pattern pattern) {
+    private static QuoteMask quote(String line, Pattern pattern) {
         QuoteMask result = new QuoteMask()
         result.masks = []
         Matcher matcher = pattern.matcher(line)
@@ -126,7 +160,7 @@ class QuoteMask {
 
 class LeftParenthesisRule implements SingleLineRule {
     private Boolean isSpace(char x) {
-        return (x == ' ' || x == '\t') 
+        return Character.isWhitespace(x)
     }
 
     Diagnostics analyze(String line) {
@@ -190,7 +224,6 @@ class LeftParenthesisRule implements SingleLineRule {
                 offset = r2
             }
         }
-        
         return sb.toString();
     }    
 }

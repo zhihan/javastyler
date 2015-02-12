@@ -27,6 +27,24 @@ class SingleLineTest {
     }
 
     @Test
+    void testTrailingSpacePass() {
+        String line = "Integer x = 1;"
+        SingleLineRule rule = new TrailingSpaceRule()
+        
+        assertThat(rule.analyze(line).passed(), is(true))
+    }
+
+    @Test
+    void testTrailingSpaceFail() {
+        String line = "Integer x = 1;  "
+        SingleLineRule rule = new TrailingSpaceRule()
+        
+        assertThat(rule.analyze(line).passed(), is(false))
+        String fixed = rule.fix(line)
+        assertThat(fixed, is("Integer x = 1;"))
+    }
+
+    @Test
     void testDoubleQuoteMaskEmpty() {
         String line = "Integer i = 1;"
         QuoteMask mask = QuoteMask.doubleQuote(line)
@@ -84,6 +102,15 @@ class SingleLineTest {
 
         assertThat(rule.analyze(line).passed(), is(false))
         assertThat(rule.fix(line), is("String a = f(b);"))
+    } 
+
+    @Test
+    void testLeftParenthesis3() {
+        String line = 'String a = f  (b) + f(   c);'
+        SingleLineRule rule = new LeftParenthesisRule()
+
+        assertThat(rule.analyze(line).passed(), is(false))
+        assertThat(rule.fix(line), is("String a = f(b) + f(c);"))
     } 
 
     @Test
