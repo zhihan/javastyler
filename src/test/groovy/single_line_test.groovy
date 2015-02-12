@@ -55,6 +55,9 @@ class SingleLineTest {
         assertThat(raw.size(), is(2))
         String matched = line.substring(raw.get(0), raw.get(1))
         assertThat(matched, is('"a \\""'))
+
+        assertThat(mask.masked(0), is(false))
+        assertThat(mask.masked(12), is(true))
     } 
 
     @Test
@@ -81,5 +84,14 @@ class SingleLineTest {
 
         assertThat(rule.analyze(line).passed(), is(false))
         assertThat(rule.fix(line), is("String a = f(b);"))
+    } 
+
+    @Test
+    void testLeftParenthesisInQuote() {
+        String line = 'String a = "f(  b)";'
+        SingleLineRule rule = new LeftParenthesisRule()
+
+        assertThat(rule.analyze(line).passed(), is(true))
+        assertThat(rule.fix(line), is(line))
     } 
 }

@@ -77,6 +77,10 @@ class QuoteMask {
     static class Pair {
         Integer start
         Integer end
+
+        Boolean between(Integer i) {
+            return (start <= i) && (i < end)
+        }
     }
 
     List<Pair> masks;
@@ -114,6 +118,10 @@ class QuoteMask {
         }
         result
     }
+
+    Boolean masked(Integer i) {
+        return masks.any{ it.between(i)}
+    }
 }
 
 class LeftParenthesisRule implements SingleLineRule {
@@ -123,12 +131,18 @@ class LeftParenthesisRule implements SingleLineRule {
 
     Diagnostics analyze(String line) {
         int offset = 0
+        QuoteMask mask = QuoteMask.doubleQuote(line)
 
         while (offset >= 0 && offset < line.size()) {
             offset = line.indexOf("(", offset)
             if (offset <0) {
                 return new Pass()
             }
+            if (mask.masked(offset)) {
+                offset = offset + 1
+                continue
+            }
+
             if (offset > 0 && isSpace(line.charAt(offset - 1))) {
                 return new Fail(msg: "Extra space before '(' at $offset")
             }
@@ -150,10 +164,15 @@ class LeftParenthesisRule implements SingleLineRule {
         StringBuilder sb = new StringBuilder(line)
         
         int offset = 0
+        QuoteMask mask = QuoteMask.doubleQuote(line)
         while (offset >= 0 ) {
             offset = sb.indexOf("(", offset)
             if (offset < 0) {
                 break
+            }
+            if (mask.masked(offset)) {
+                offset = offset + 1
+                continue
             }
             if (offset > 0 && isSpace(sb.charAt(offset - 1))) {
                 int r = offset - 1
