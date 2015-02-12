@@ -33,5 +33,28 @@ class SingleLineTest {
         List<Integer> raw = mask.rawMasks()
 
         assertThat(raw.size(), is(0))
+    }
+
+    @Test
+    void testDoubleQuoteMaskNonEmpty() {
+        String line = 'String a = "\'a\'";'
+        QuoteMask mask = QuoteMask.doubleQuote(line)
+        List<Integer> raw = mask.rawMasks()
+
+        assertThat(raw.size(), is(2))
+        String matched = line.substring(raw.get(0), raw.get(1))
+        assertThat(matched, is('"\'a\'"'))
+    }     
+
+    @Test
+    void testDoubleQuoteMaskWithSlash() {
+        String line = 'String a = "a \\"";'
+        QuoteMask mask = QuoteMask.doubleQuote(line)
+        List<Integer> raw = mask.rawMasks()
+
+        assertThat(raw.size(), is(2))
+        String matched = line.substring(raw.get(0), raw.get(1))
+        assertThat(matched, is('"a \\""'))
     } 
+
 }

@@ -66,24 +66,32 @@ class LineWidthRule implements SingleLineRule {
     }
 }
 
+/**
+ * A class to provide maskng for quoted strings. For example, 
+ * some rules such as the parenthesis rule does not apply to parenthesis
+ * in a quoted string.
+ */
 class QuoteMask {
 
-    class Pair {
+    static class Pair {
         Integer start
         Integer end
     }
 
     List<Pair> masks;
 
-    static Pattern doubleQuoteString = ~/"[^"]*"/
-    static Pattern singleQuoteString = ~/'[^']*'/
+    static Pattern doubleQuoteString = ~/"([^"]|\")*"/
+    static Pattern singleQuoteString = ~/'([^']|\')*'/
 
-    static QuoteMask quote(String line, Pattern) {
+    static QuoteMask quote(String line, Pattern pattern) {
         QuoteMask result = new QuoteMask()
         result.masks = []
-        Matcher matcher = doubleQuoteString.matcher(line)
+        Matcher matcher = pattern.matcher(line)
         while (matcher.find()) {
-            result.masks.add(new Pair(matcher.start(), matcher.end()))
+            Pair p = new Pair()
+            p.start = matcher.start()
+            p.end = matcher.end()
+            result.masks.add(p)
         }
         result
     }
