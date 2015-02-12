@@ -8,7 +8,7 @@ import static org.hamcrest.Matchers.*
 class SingleLineTest {
     @Test
     void testSingleLineWidthPass() {
-        String line = "Int x = 1;"
+        String line = "Integer x = 1;"
         SingleLineRule rule = new LineWidthRule(width: 80)
         
         assertThat(rule.analyze(line).passed(), is(true))
@@ -25,4 +25,13 @@ class SingleLineTest {
         assertThat(d.message().indexOf("100"), greaterThan(0))
         assertThat(rule.canFix(line), is(false))
     }
+
+    @Test
+    void testDoubleQuoteMaskEmpty() {
+        String line = "Integer i = 1;"
+        QuoteMask mask = QuoteMask.doubleQuote(line)
+        List<Integer> raw = mask.rawMasks()
+
+        assertThat(raw.size(), is(0))
+    } 
 }

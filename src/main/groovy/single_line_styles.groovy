@@ -1,5 +1,8 @@
 package me.zhihan.javastyler
 
+import java.util.regex.Matcher
+import java.util.regex.Pattern
+
 abstract class Diagnostics {
     abstract Boolean passed()
     abstract String message()
@@ -60,5 +63,45 @@ class LineWidthRule implements SingleLineRule {
 
     String fix(String line) {
         line
+    }
+}
+
+class QuoteMask {
+
+    class Pair {
+        Integer start
+        Integer end
+    }
+
+    List<Pair> masks;
+
+    static Pattern doubleQuoteString = ~/"[^"]*"/
+    static Pattern singleQuoteString = ~/'[^']*'/
+
+    static QuoteMask quote(String line, Pattern) {
+        QuoteMask result = new QuoteMask()
+        result.masks = []
+        Matcher matcher = doubleQuoteString.matcher(line)
+        while (matcher.find()) {
+            result.masks.add(new Pair(matcher.start(), matcher.end()))
+        }
+        result
+    }
+
+    static QuoteMask doubleQuote(String line) {
+        quote(line, doubleQuoteString)
+    }
+
+    static QuoteMask singleQuote(String line) {
+        quote(line, singleQuoteString)
+    }
+    // Visible for tests
+    List<Integer> rawMasks() {
+        List<Integer> result = []
+        masks.each {
+            result.add(it.start)
+            result.add(it.end)
+        }
+        result
     }
 }
