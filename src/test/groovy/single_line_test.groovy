@@ -57,4 +57,29 @@ class SingleLineTest {
         assertThat(matched, is('"a \\""'))
     } 
 
+    @Test
+    void testLeftParenthesisPass() {
+        String line = 'String a = f(b, c);'
+        SingleLineRule rule = new LeftParenthesisRule()
+
+        assertThat(rule.analyze(line).passed(), is(true))
+    } 
+
+    @Test
+    void testLeftParenthesis1() {
+        String line = 'String a = f  ();'
+        SingleLineRule rule = new LeftParenthesisRule()
+
+        assertThat(rule.analyze(line).passed(), is(false))
+        assertThat(rule.fix(line), is("String a = f();"))
+    } 
+
+    @Test
+    void testLeftParenthesis2() {
+        String line = 'String a = f(  b);'
+        SingleLineRule rule = new LeftParenthesisRule()
+
+        assertThat(rule.analyze(line).passed(), is(false))
+        assertThat(rule.fix(line), is("String a = f(b);"))
+    } 
 }

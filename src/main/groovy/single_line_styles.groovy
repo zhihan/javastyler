@@ -2,6 +2,7 @@ package me.zhihan.javastyler
 
 import java.util.regex.Matcher
 import java.util.regex.Pattern
+import java.util.List
 
 abstract class Diagnostics {
     abstract Boolean passed()
@@ -103,6 +104,7 @@ class QuoteMask {
     static QuoteMask singleQuote(String line) {
         quote(line, singleQuoteString)
     }
+
     // Visible for tests
     List<Integer> rawMasks() {
         List<Integer> result = []
@@ -112,4 +114,64 @@ class QuoteMask {
         }
         result
     }
+}
+
+class LeftParenthesisRule implements SingleLineRule {
+    private Boolean isSpace(char x) {
+        return (x == ' ' || x == '\t') 
+    }
+
+    Diagnostics analyze(String line) {
+        int offset = 0
+
+        while (offset >= 0 && offset < line.size()) {
+            offset = line.indexOf("(", offset)
+            if (offset <0) {
+                return new Pass()
+            }
+            if (offset > 0 && isSpace(line.charAt(offset - 1))) {
+                return new Fail(msg: "Extra space before '(' at $offset")
+            }
+            if (offset < line.size() - 2 && isSpace(line.charAt(offset + 1)) ) {
+                return new Fail(msg: "Extra space after '(' at $offset")
+            }
+            offset = offset + 1
+        }
+        return new Pass()
+    }
+
+    /** A fix can be provided based on the diagnostics */
+    Boolean canFix(String line) {
+        return true
+    }
+
+    /** Return a fixed line */
+    String fix(String line) {
+        StringBuilder sb = new StringBuilder(line)
+        
+        int offset = 0
+        while (offset >= 0 ) {
+            offset = sb.indexOf("(", offset)
+            if (offset < 0) {
+                break
+            }
+            if (offset > 0 && isSpace(sb.charAt(offset - 1))) {
+                int r = offset - 1
+                while(r >=0 && isSpace(sb.charAt(r))) {
+                    sb.deleteCharAt(r)
+                    r = r - 1
+                }
+                offset = r + 2
+            }
+            if (offset < sb.size() - 2 && isSpace(sb.charAt(offset + 1)) ) {
+                int r2 = offset + 1
+                while (r2 < sb.size() - 1 && isSpace(sb.charAt(r2))) {
+                    sb.deleteCharAt(r2)
+                }
+                offset = r2
+            }
+        }
+        
+        return sb.toString();
+    }    
 }
