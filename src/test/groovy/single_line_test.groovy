@@ -79,6 +79,24 @@ class SingleLineTest {
     } 
 
     @Test
+    void testLeadingTabPass() {
+        String line = '  (b + c);' // continued line
+        SingleLineRule rule = new LeadingTabRule()
+
+        assertThat(rule.analyze(line).passed(), is(true))
+        assertThat(rule.fix(line), is(line))
+    } 
+
+    @Test
+    void testLeadingTabFail() {
+        String line = '\t  \tInteger i;' // continued line
+        SingleLineRule rule = new LeadingTabRule()
+
+        assertThat(rule.analyze(line).passed(), is(false))
+        assertThat(rule.fix(line), is("      Integer i;"))
+    } 
+
+    @Test
     void testLeftParenthesisPass() {
         String line = 'String a = f(b, c);'
         SingleLineRule rule = new LeftParenthesisRule()
@@ -138,5 +156,43 @@ class SingleLineTest {
 
         assertThat(rule.analyze(line).passed(), is(true))
         assertThat(rule.fix(line), is(line))
+    }
+
+    @Test
+    void testSemicolonPass() {
+        String line = '  Integer i = 0;' // continued line
+        SingleLineRule rule = NoLeadingSpaceRule.semiColonRule()
+
+        assertThat(rule.analyze(line).passed(), is(true))
+        assertThat(rule.fix(line), is(line))
+    } 
+    
+
+    @Test
+    void testSemicolonFail() {
+        String line = '  Integer i = 0  ;' // continued line
+        SingleLineRule rule = NoLeadingSpaceRule.semiColonRule()
+
+        assertThat(rule.analyze(line).passed(), is(false))
+        assertThat(rule.fix(line), is('  Integer i = 0;'))
+    } 
+
+    @Test
+    void testRightParenthesisPass() {
+        String line = '  Integer i = f();' // continued line
+        SingleLineRule rule = NoLeadingSpaceRule.rightParenthesisRule()
+
+        assertThat(rule.analyze(line).passed(), is(true))
+        assertThat(rule.fix(line), is(line))
+    } 
+    
+
+    @Test
+    void testRightParenthesisFail() {
+        String line = '  Integer i = f(   );' // continued line
+        SingleLineRule rule = NoLeadingSpaceRule.rightParenthesisRule()
+
+        assertThat(rule.analyze(line).passed(), is(false))
+        assertThat(rule.fix(line), is('  Integer i = f();'))
     } 
 }
