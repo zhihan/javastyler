@@ -79,6 +79,11 @@ class LineWidthRule implements SingleLineRule {
     }
 }
 
+/** 
+  * Trailing whitespace rule
+  *
+  * No trailing whitespace is allowed. 
+  */
 class TrailingSpaceRule implements SingleLineRule {
     Diagnostics analyze(String line) {
         if (Character.isWhitespace(line.charAt(line.size() - 1))) {
@@ -100,6 +105,13 @@ class TrailingSpaceRule implements SingleLineRule {
         line.substring(0, i + 1)
     }
 }
+
+/** 
+  * Leading tab rule
+  *
+  * No tab should appear before non-whitespace characters.
+  */
+
 
 /**
  * A helper class to provide maskng for quoted strings. For example, 
@@ -158,6 +170,12 @@ class QuoteMask {
     }
 }
 
+/** 
+  * Left parenthesis rule
+  *
+  * Left parenthesis should not follow a whitespace and should not be followed
+  * by a whitespace.
+  */
 class LeftParenthesisRule implements SingleLineRule {
     private Boolean isSpace(char x) {
         return Character.isWhitespace(x)
@@ -178,7 +196,21 @@ class LeftParenthesisRule implements SingleLineRule {
             }
 
             if (offset > 0 && isSpace(line.charAt(offset - 1))) {
-                return new Fail(msg: "Extra space before '(' at $offset")
+                int r = offset - 1
+                while(r >= 0 && isSpace(line.charAt(r))) {
+                    r = r - 1
+                }
+                if (r == -1) { // continued line
+                    offset = offset + 1
+                    continue
+                }
+                if (Character.isLetter(line.charAt(r)) ||
+                    Character.isDigit(line.charAt(r))) {
+                    return new Fail(msg: "Extra space before '(' at $offset")
+                } else {
+                    offset = offset + 1
+                    continue
+                }
             }
             if (offset < line.size() - 2 && isSpace(line.charAt(offset + 1)) ) {
                 return new Fail(msg: "Extra space after '(' at $offset")
@@ -210,11 +242,26 @@ class LeftParenthesisRule implements SingleLineRule {
             }
             if (offset > 0 && isSpace(sb.charAt(offset - 1))) {
                 int r = offset - 1
-                while(r >=0 && isSpace(sb.charAt(r))) {
-                    sb.deleteCharAt(r)
+                while(r >= 0 && isSpace(sb.charAt(r))) {
                     r = r - 1
                 }
-                offset = r + 2
+               if (r == -1) { // continued line
+                    offset = offset + 1
+                    continue
+                }
+
+                if (Character.isLetter(line.charAt(r)) ||
+                    Character.isDigit(line.charAt(r))) {
+                    int deleteIdx = offset - 1
+                    while (deleteIdx > r) {
+                        sb.deleteCharAt(deleteIdx)
+                        deleteIdx = deleteIdx - 1
+                    }
+                    offset = r + 2
+                } else {
+                    offset = offset + 1
+                    continue
+                }
             }
             if (offset < sb.size() - 2 && isSpace(sb.charAt(offset + 1)) ) {
                 int r2 = offset + 1

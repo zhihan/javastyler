@@ -121,4 +121,22 @@ class SingleLineTest {
         assertThat(rule.analyze(line).passed(), is(true))
         assertThat(rule.fix(line), is(line))
     } 
+
+    @Test
+    void testLeftParenthesisWithOperator() {
+        String line = 'Integer a = a * (b + c);'
+        SingleLineRule rule = new LeftParenthesisRule()
+
+        assertThat(rule.analyze(line).passed(), is(true))
+        assertThat(rule.fix(line), is(line))
+    } 
+
+    @Test
+    void testLeftParenthesisContinuedLine() {
+        String line = '  (b + c);' // continued line
+        SingleLineRule rule = new LeftParenthesisRule()
+
+        assertThat(rule.analyze(line).passed(), is(true))
+        assertThat(rule.fix(line), is(line))
+    } 
 }
