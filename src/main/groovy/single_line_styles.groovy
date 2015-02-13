@@ -35,6 +35,19 @@ class Fail extends Diagnostics {
     }
 }
 
+class FailWithLineNumber extends Diagnostics {
+    String msg
+    List<Integer> lines
+
+    Boolean passed() {
+        return false
+    }
+
+    String message() {
+        msg
+    }
+}
+
 /**
   * Single-line rules
   */
