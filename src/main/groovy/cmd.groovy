@@ -61,6 +61,17 @@ class Tool {
       fmt.printHelp("Tool", options)  
     }
 
+    static List<SingleLineRule> singleLineRules() {
+        [ 
+            new TrailingSpaceRule(), 
+            new LineWidthRule(),
+            new LeadingTabRule(),
+            new LeftParenthesisRule(),
+            NoLeadingSpaceRule.semiColonRule(),
+            NoLeadingSpaceRule.rightParenthesisRule()
+        ]
+    }
+
     static void main(String[] args) {
 
         Options options = new Options()
@@ -76,11 +87,25 @@ class Tool {
         } 
 
         if (cmd.hasOption("f")) {
-            String file = cmd.getOptionValue("f")
-            println(file)
+            String fileName = cmd.getOptionValue("f")
+            List<String> lines = new File(fileName).readLines()
+            List<Diagnostics> result = analyze(lines, singleLineRules())
+            report(result)
         }
     }
 
+
+    static void report(List<Diagnostics> results) {
+        for (diag in results) {
+            if (!diag.passed()) {
+                String lineNos = diag.lines.join(",")
+                println("Problem found $diag.rule at $lineNos")
+            }
+        }
+    }
+    /**
+     * Analyze the whole file using a single line rule.
+     */
     static Diagnostics analyze(List<String> lines, SingleLineRule rule) {
         List<Integer> problems = []
         List<Diagnostics> diags = []
@@ -100,7 +125,7 @@ class Tool {
         }
     }
 
-    static List<Diagnostics> analyzeSingleLine(List<String> lines, List<SingleLineRule> rules) {
+    static List<Diagnostics> analyze(List<String> lines, List<SingleLineRule> rules) {
         rules.collect{rule -> analyze(lines, rule)}
     }
 
