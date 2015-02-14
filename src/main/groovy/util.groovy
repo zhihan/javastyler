@@ -3,6 +3,7 @@ package me.zhihan.javastyler
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 import java.util.List
+
 /**
  * A helper class to provide maskng for quoted strings. For example, 
  * some rules such as the parenthesis rule does not apply to parenthesis

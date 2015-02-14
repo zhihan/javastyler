@@ -5,48 +5,6 @@ package me.zhihan.javastyler
  * 
  * The styles that can be checked and enforced using a single line of code. 
  */
-abstract class Diagnostics {
-    abstract Boolean passed()
-    abstract String message()
-}
-
-/**
- * Diagnostics 
- * Either pass or fail.
- */
-class Pass extends Diagnostics {
-    Boolean passed() {
-        return true
-    }
-
-    String message() {
-        "Passed"
-    }
-}
-
-class Fail extends Diagnostics {
-    String msg
-    Boolean passed() {
-        return false
-    }
-
-    String message() {
-        msg
-    }
-}
-
-class FailWithLineNumber extends Diagnostics {
-    String msg
-    List<Integer> lines
-
-    Boolean passed() {
-        return false
-    }
-
-    String message() {
-        msg
-    }
-}
 
 /**
   * Single-line rules
@@ -127,7 +85,7 @@ class LeadingTabRule implements SingleLineRule {
             i = i + 1
         }
         if (i < line.size() && line.charAt(i) == '\t') {
-            return new Fail(msg: "Leading tabs at $i")
+            return new Fail(msg: "Leading tabs found")
         } else {
             return new Pass()
         }
