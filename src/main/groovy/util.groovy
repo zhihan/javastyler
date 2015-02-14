@@ -61,3 +61,21 @@ class QuoteMask {
     }
 }
 
+
+class StringUtil {
+    static lastToken(String s, int offset) {
+        int i = offset - 1
+        while (i >= 0 && !Character.isWhitespace(s.charAt(i))) {
+            i = i - 1
+        }
+        if (i == 0) {
+            s
+        } else {
+            s.substring(i+1, offset)
+        }
+    }
+
+    static Boolean isControlKeyword(String s) {
+        return s.equals("if") || s.equals("while") || s.equals("for")
+    }
+}

@@ -30,6 +30,12 @@ class LeftParenthesisRule implements SingleLineRule {
                     offset = offset + 1
                     continue
                 }
+                
+                if (StringUtil.isControlKeyword(
+                    StringUtil.lastToken(line, r + 1))) {
+                    offset = offset + 1
+                    continue
+                } 
                 if (Character.isLetter(line.charAt(r)) ||
                     Character.isDigit(line.charAt(r))) {
                     return new Fail(msg: "Extra space before '(' at $offset")
@@ -75,7 +81,12 @@ class LeftParenthesisRule implements SingleLineRule {
                     offset = offset + 1
                     continue
                 }
-
+                if (StringUtil.isControlKeyword(
+                    StringUtil.lastToken(sb.toString(), r + 1))) {
+                    offset = offset + 1
+                    continue
+                } 
+                
                 if (Character.isLetter(line.charAt(r)) ||
                     Character.isDigit(line.charAt(r))) {
                     int deleteIdx = offset - 1
@@ -155,7 +166,7 @@ class NoLeadingSpaceRule implements SingleLineRule {
         StringBuffer sb = new StringBuffer(line)
 
         while (offset >=0) {
-            offset = line.indexOf(token, offset)
+            offset = sb.indexOf(token, offset)
             if (offset <0) {
                 break
             }
@@ -164,9 +175,9 @@ class NoLeadingSpaceRule implements SingleLineRule {
                 continue
             }
 
-            if (offset > 0 && Character.isWhitespace(line.charAt(offset - 1))) {
+            if (offset > 0 && Character.isWhitespace(sb.charAt(offset - 1))) {
                 int r = offset - 1
-                while(r >= 0 && Character.isWhitespace(line.charAt(r))) {
+                while(r >= 0 && Character.isWhitespace(sb.charAt(r))) {
                     r = r - 1
                 }
                 if (r == -1) { // closing line
@@ -178,6 +189,8 @@ class NoLeadingSpaceRule implements SingleLineRule {
                         sb.deleteCharAt(r + 1)
                         numDeleted = numDeleted + 1
                     }
+                    offset = r + 2
+                    continue
                 }
             }
             offset = offset + 1
@@ -192,5 +205,92 @@ class NoLeadingSpaceRule implements SingleLineRule {
 
     static SingleLineRule rightParenthesisRule() {
         new NoLeadingSpaceRule(token: ")")
+    }
+}
+
+class RequireLeadingSpaceRule implements SingleLineRule {
+    String token
+
+    Diagnostics analyze(String line) {
+        int offset = 0
+        QuoteMask mask = QuoteMask.doubleQuote(line)
+
+        while (offset >= 0 && offset < line.size()) {
+            offset = line.indexOf(token, offset)
+            if (offset < 0) {
+                return new Pass()
+            }
+            if (mask.masked(offset)) {
+                offset = offset + 1
+                continue
+            }
+
+            if (offset > 0 && !Character.isWhitespace(line.charAt(offset - 1))) {
+                return new Fail(msg: "Does not have space before {")
+            } 
+
+            if (offset > 1 && 
+                Character.isWhitespace(line.charAt(offset - 1)) &&
+                Character.isWhitespace(line.charAt(offset - 2))) {
+                return new Fail(msg: "Has more than one space before {")
+            } else {
+                offset = offset + 1
+            }
+        }
+        new Pass()
+    }
+
+    Boolean canFix(String line) {
+        true
+    }
+
+    String fix(String line) {
+        StringBuilder sb = new StringBuilder(line)
+        int offset = 0
+        QuoteMask mask = QuoteMask.doubleQuote(line)
+
+        while (offset >= 0 && offset < sb.size()) {
+            offset = sb.indexOf(token, offset)
+            if (offset < 0) {
+                break
+            }
+            if (mask.masked(offset)) {
+                offset = offset + 1
+                continue
+            }
+
+            if (offset > 0 && !Character.isWhitespace(sb.charAt(offset - 1))) {
+                sb.insert(offset, ' ')
+                offset = offset + 2
+                continue
+            } 
+
+            if (offset > 1 && 
+                Character.isWhitespace(sb.charAt(offset - 1)) &&
+                Character.isWhitespace(sb.charAt(offset - 2))) {
+                if (sb.substring(0, offset).trim().size() == 0 ) {
+                    // All whitespace before {
+                    offset = offset + 1
+                    continue
+                }
+
+                int r = offset - 2
+                println("start del")
+                while (Character.isWhitespace(sb.charAt(r))) {
+                    sb.deleteCharAt(r)
+                    r = r - 1
+                    println(sb)
+                }
+                offset = r + 3
+                continue
+            } else {
+                offset = offset + 1
+            }
+        }
+        sb.toString()
+    }
+
+    static SingleLineRule openBracketRule() {
+        new RequireLeadingSpaceRule(token: "{")
     }
 }

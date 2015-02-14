@@ -14,6 +14,15 @@ class ParenthesisTest {
     } 
 
     @Test
+    void testLeftParenthesisPass2() {
+        String line = 'if (a > 1) {'
+        SingleLineRule rule = new LeftParenthesisRule()
+
+        assertThat(rule.analyze(line).passed(), is(true))
+        assertThat(rule.fix(line), is(line))
+    } 
+
+    @Test
     void testLeftParenthesis1() {
         String line = 'String a = f  ();'
         SingleLineRule rule = new LeftParenthesisRule()
@@ -101,5 +110,32 @@ class ParenthesisTest {
 
         assertThat(rule.analyze(line).passed(), is(false))
         assertThat(rule.fix(line), is('  Integer i = f();'))
-    } 
+    }
+
+    @Test
+    void testOpenBracketPass() {
+        String line = "  void fun() {"
+        SingleLineRule rule = RequireLeadingSpaceRule.openBracketRule()
+
+        assertThat(rule.analyze(line).passed(), is(true))
+        assertThat(rule.fix(line), is(line))
+    }
+
+    @Test
+    void testOpenBracketFail() {
+        String line = "  void fun(){"
+        SingleLineRule rule = RequireLeadingSpaceRule.openBracketRule()
+
+        assertThat(rule.analyze(line).passed(), is(false))
+        assertThat(rule.fix(line), is("  void fun() {"))
+    }
+
+    @Test
+    void testOpenBracketFail2() {
+        String line = "  void fun()    {"
+        SingleLineRule rule = RequireLeadingSpaceRule.openBracketRule()
+
+        assertThat(rule.analyze(line).passed(), is(false))
+        assertThat(rule.fix(line), is("  void fun() {"))
+    }
 }
