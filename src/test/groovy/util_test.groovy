@@ -13,4 +13,11 @@ class UtilTest {
         assertThat(StringUtil.lastToken(a, 8), is(""))
         assertThat(StringUtil.lastToken(a, 9), is("f"))
     }
+
+    @Test
+    void testFirstToken() {
+        String a = " abc abc"
+        assertThat(StringUtil.findToken(a), is("abc"))
+        assertThat(StringUtil.findToken("   "), is(""))
+    }
 }

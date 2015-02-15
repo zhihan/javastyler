@@ -10,7 +10,6 @@ import java.util.List
  * in a quoted string.
  */
 class QuoteMask {
-
     static class Pair {
         Integer start
         Integer end
@@ -61,7 +60,7 @@ class QuoteMask {
     }
 }
 
-
+/** Utility for stirng manipulations */
 class StringUtil {
     static lastToken(String s, int offset) {
         int i = offset - 1
@@ -77,5 +76,16 @@ class StringUtil {
 
     static Boolean isControlKeyword(String s) {
         return s.equals("if") || s.equals("while") || s.equals("for")
+    }
+
+    static String findToken(String s) {
+        Pattern pattern = ~/[^\s]+/
+        Matcher matcher = pattern.matcher(s)
+        if (matcher.find()) {
+            s.substring(matcher.start(), matcher.end())
+        } else {
+            ""
+        }
+
     }
 }
