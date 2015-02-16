@@ -4,22 +4,20 @@ import java.util.regex.Matcher
 import java.util.regex.Pattern
 import java.util.List
 
+class PairInt {
+    Integer start
+    Integer end
+    Boolean between(Integer i) {
+        return (start <= i) && (i < end)
+    }
+}
 /**
  * A helper class to provide maskng for quoted strings. For example, 
  * some rules such as the parenthesis rule does not apply to parenthesis
  * in a quoted string.
  */
 class QuoteMask {
-    static class Pair {
-        Integer start
-        Integer end
-
-        Boolean between(Integer i) {
-            return (start <= i) && (i < end)
-        }
-    }
-
-    List<Pair> masks;
+    List<PairInt> masks;
 
     static Pattern doubleQuoteString = ~/"([^"]|\")*"/
     static Pattern singleQuoteString = ~/'([^']|\')*'/
@@ -29,9 +27,7 @@ class QuoteMask {
         result.masks = []
         Matcher matcher = pattern.matcher(line)
         while (matcher.find()) {
-            Pair p = new Pair()
-            p.start = matcher.start()
-            p.end = matcher.end()
+            PairInt p = new PairInt(start: matcher.start(), end: matcher.end())
             result.masks.add(p)
         }
         result
@@ -86,6 +82,14 @@ class StringUtil {
         } else {
             ""
         }
-
     }
+}
+
+/** 
+ * Simple class to represent a position in the source file by
+ * line and column number 
+ */
+class LineColumn {
+    Integer line
+    Integer column
 }
