@@ -92,4 +92,21 @@ class StringUtil {
 class LineColumn {
     Integer line
     Integer column
+
+    static LineColumn endOfLine(Integer l) {
+        return new LineColumn(line:l, column:-2)
+    }
 }
+
+class Comment {
+    LineColumn start
+    LineColumn end
+}
+
+class CommentScanner {
+    private Pattern line
+    List<Comment> scan(List<String> lines) {
+
+    }
+}
+
