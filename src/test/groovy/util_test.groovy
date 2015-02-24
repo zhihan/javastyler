@@ -20,4 +20,23 @@ class UtilTest {
         assertThat(StringUtil.findToken(a), is("abc"))
         assertThat(StringUtil.findToken("   "), is(""))
     }
+
+    @Test
+    void testScanComments() {
+        def x = ["/* aa ", "bb */"]
+        def scanner = new CommentScanner()
+
+        def comments = scanner.scan(x)
+        assertThat(comments.size(), is(1))
+        assertThat(comments.get(0), is(new Comment(0, 0, 1, 4)))
+    }
+
+    @Test 
+    void testScanComments2() {
+        def x = ["aaa /*/", "bb */"]
+        def scanner = new CommentScanner()
+
+        def comments = scanner.scan(x)
+        assertThat(comments.size(), is(1))
+    }
 }

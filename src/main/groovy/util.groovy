@@ -96,17 +96,127 @@ class LineColumn {
     static LineColumn endOfLine(Integer l) {
         return new LineColumn(line:l, column:-2)
     }
+
+    boolean equals(obj) {
+        if (obj instanceof LineColumn) {
+            LineColumn other = obj as LineColumn
+            (line == other.line) && (column == other.column)
+        } else {
+            false
+        }
+    }
+
+    LineColumn(Integer l, Integer c) {
+        line = l
+        column = c
+    }
 }
 
 class Comment {
     LineColumn start
     LineColumn end
+
+    boolean equals(obj) {
+        if (obj instanceof Comment) {
+            Comment other = obj as Comment
+            start.equals(other.start) && end.equals(other.end)
+        } else {
+            false
+        }
+    }
+
+    Comment(Integer sl, Integer sc, Integer el, Integer ec) {
+        start = new LineColumn(sl, sc)
+        end = new LineColumn(el, ec)
+    }
+
+    Comment(LineColumn s, LineColumn e) {
+        start = s
+        end = e
+    }
 }
 
 class CommentScanner {
-    private Pattern line
-    List<Comment> scan(List<String> lines) {
+    Boolean inComment
+    LineColumn start
 
+    List<String> buffer
+    Integer lineIdx
+    Integer colIdx
+
+    void reset() {
+        inComment = false
+        start = null
+        lineIdx = 0
+        colIdx = 0
     }
+
+    Boolean isStartOfComment() {
+        (!inComment) &&
+        buffer.get(lineIdx).charAt(colIdx) == '/' && 
+            (colIdx < buffer.get(lineIdx).size() -1) && 
+            (buffer.get(lineIdx).charAt(colIdx +1) == '*')
+    }
+
+    Boolean isEndOfComment() {
+        (inComment) &&
+        buffer.get(lineIdx).charAt(colIdx) == '*' && 
+            (colIdx < buffer.get(lineIdx).size() -1) && 
+            (buffer.get(lineIdx).charAt(colIdx +1) == '/')
+    }
+
+    Boolean isEndOfLine() {
+        colIdx == buffer.get(lineIdx).size() - 1
+    }
+
+    Boolean isEndOfFile() {
+        (lineIdx == buffer.size() - 1) && 
+        (colIdx == buffer.get(lineIdx).size() - 1)
+    }
+    Boolean moveToNext() {
+        if (colIdx < buffer.get(lineIdx).size() - 1 ) {
+            colIdx++; 
+            return true
+        } else {
+            if (lineIdx < buffer.size() - 1) {
+                lineIdx++;
+                colIdx = 0
+                return true
+            } else {
+                return false
+            }
+        }
+    }
+
+    List<Comment> scan(List<String> lines) {
+        buffer = lines
+        reset()
+        List<Comment> comments = []
+
+        inComment = isStartOfComment()
+        if (inComment) {
+            start = new LineColumn(lineIdx, colIdx)
+            colIdx++
+        }
+        while (moveToNext()) {
+            if (!inComment) {
+                if (isStartOfComment()) {
+                    start = new LineColumn(lineIdx, colIdx)
+                    inComment = true
+                    colIdx++
+                } 
+            } else {
+                if (isEndOfComment()) {
+                    def e = new LineColumn(lineIdx, colIdx + 1)
+                    comments.add(new Comment(start, e))
+                    start = null
+                    inComment = false
+                    colIdx++
+                }
+            }
+        }
+        comments
+    }
+
 }
 
