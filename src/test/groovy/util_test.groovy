@@ -39,4 +39,14 @@ class UtilTest {
         def comments = scanner.scan(x)
         assertThat(comments.size(), is(1))
     }
+
+    @Test
+    void testScanComments3() {
+        def x = ["aaa //", "bb /* c */", "cc /* // */"] 
+        def scanner = new CommentScanner()
+        def comments = scanner.scan(x)
+        assertThat(comments.size(), is(3))
+        assertThat(comments.get(0), is(new Comment(0, 4, 0, -2)))
+        assertThat(comments.get(2), is(new Comment(2, 3, 2, 10)))
+    }
 }

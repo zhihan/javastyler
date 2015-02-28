@@ -1,5 +1,6 @@
 package me.zhihan.javastyler
 
+import groovy.transform.ToString
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 import java.util.List
@@ -11,6 +12,7 @@ class PairInt {
         return (start <= i) && (i < end)
     }
 }
+
 /**
  * A helper class to provide maskng for quoted strings. For example, 
  * some rules such as the parenthesis rule does not apply to parenthesis
@@ -89,12 +91,13 @@ class StringUtil {
  * Simple class to represent a position in the source file by
  * line and column number 
  */
+@ToString
 class LineColumn {
     Integer line
     Integer column
 
     static LineColumn endOfLine(Integer l) {
-        return new LineColumn(line:l, column:-2)
+        return new LineColumn(l, -2)
     }
 
     boolean equals(obj) {
@@ -112,6 +115,7 @@ class LineColumn {
     }
 }
 
+@ToString
 class Comment {
     LineColumn start
     LineColumn end
@@ -136,26 +140,42 @@ class Comment {
     }
 }
 
+/**
+ * A simple class that scans a Java source file and process the comments
+ */
 class CommentScanner {
     Boolean inComment
+    Boolean inLineComment
     LineColumn start
 
     List<String> buffer
     Integer lineIdx
     Integer colIdx
+    List<Comment> comments = []
 
     void reset() {
         inComment = false
+        inLineComment = false
+        comments.clear()
         start = null
         lineIdx = 0
         colIdx = 0
     }
 
+    // '//' marks the start of a line comment
+    Boolean isStartOfLineComment() {
+        (!inComment) && 
+        buffer.get(lineIdx).charAt(colIdx) == '/' &&
+            (colIdx < buffer.get(lineIdx).size() - 1) && 
+            (buffer.get(lineIdx).charAt(colIdx + 1) == '/')
+    }
+
+    // "/*" marks the start of a comment region
     Boolean isStartOfComment() {
         (!inComment) &&
         buffer.get(lineIdx).charAt(colIdx) == '/' && 
-            (colIdx < buffer.get(lineIdx).size() -1) && 
-            (buffer.get(lineIdx).charAt(colIdx +1) == '*')
+            (colIdx < buffer.get(lineIdx).size() - 1) && 
+            (buffer.get(lineIdx).charAt(colIdx + 1) == '*')
     }
 
     Boolean isEndOfComment() {
@@ -173,6 +193,7 @@ class CommentScanner {
         (lineIdx == buffer.size() - 1) && 
         (colIdx == buffer.get(lineIdx).size() - 1)
     }
+
     Boolean moveToNext() {
         if (colIdx < buffer.get(lineIdx).size() - 1 ) {
             colIdx++; 
@@ -188,23 +209,43 @@ class CommentScanner {
         }
     }
 
+    void moveToEndOfLine() {
+        colIdx = buffer.get(lineIdx).size() - 1
+    }
+
+    void handleLineComment() {
+        Boolean isStart = isStartOfLineComment()
+        if (isStart) {
+            // The remainder of the line is comment
+            def s = new LineColumn(lineIdx, colIdx)
+            def e = LineColumn.endOfLine(lineIdx)
+            comments.add(new Comment(s, e))
+            moveToEndOfLine()
+        }
+    }
+
     List<Comment> scan(List<String> lines) {
         buffer = lines
         reset()
-        List<Comment> comments = []
-
+    
         inComment = isStartOfComment()
         if (inComment) {
             start = new LineColumn(lineIdx, colIdx)
             colIdx++
         }
+
+        handleLineComment() // If the remainder is line comment, process it
+
         while (moveToNext()) {
             if (!inComment) {
                 if (isStartOfComment()) {
                     start = new LineColumn(lineIdx, colIdx)
                     inComment = true
                     colIdx++
-                } 
+                } else {
+                    handleLineComment()
+                }
+
             } else {
                 if (isEndOfComment()) {
                     def e = new LineColumn(lineIdx, colIdx + 1)
