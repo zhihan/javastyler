@@ -20,33 +20,4 @@ class UtilTest {
         assertThat(StringUtil.findToken(a), is("abc"))
         assertThat(StringUtil.findToken("   "), is(""))
     }
-
-    @Test
-    void testScanComments() {
-        def x = ["/* aa ", "bb */"]
-        def scanner = new CommentScanner()
-
-        def comments = scanner.scan(x)
-        assertThat(comments.size(), is(1))
-        assertThat(comments.get(0), is(new Comment(0, 0, 1, 4)))
-    }
-
-    @Test 
-    void testScanComments2() {
-        def x = ["aaa /*/", "bb */"]
-        def scanner = new CommentScanner()
-
-        def comments = scanner.scan(x)
-        assertThat(comments.size(), is(1))
-    }
-
-    @Test
-    void testScanComments3() {
-        def x = ["aaa //", "bb /* c */", "cc /* // */"] 
-        def scanner = new CommentScanner()
-        def comments = scanner.scan(x)
-        assertThat(comments.size(), is(3))
-        assertThat(comments.get(0), is(new Comment(0, 4, 0, -2)))
-        assertThat(comments.get(2), is(new Comment(2, 3, 2, 10)))
-    }
 }
