@@ -21,6 +21,18 @@ class CommentTest {
         assertThat(e, is(equalTo(f)))
     }
 
+    @Test
+    void testLineColumnLeq() {
+        def a = new LineColumn(1, 1)
+        def b = new LineColumn(0, 1)
+        def c = LineColumn.endOfLine(1)
+
+        assertThat(b.leq(a), is(true))
+        assertThat(c.leq(a), is(false))
+        assertThat(a.leq(c), is(true))
+        assertThat(b.leq(c), is(true))
+    }
+
 
     @Test
     void testScanComments() {
@@ -49,5 +61,20 @@ class CommentTest {
         assertThat(comments.size(), is(3))
         assertThat(comments.get(0), is(new Comment(0, 4, 0, -2)))
         assertThat(comments.get(2), is(new Comment(2, 3, 2, 10)))
+    }
+
+    @Test
+    void testCommentContains() {
+        def x = ["aaa //", "bb /* c */", "cc /* // */"] 
+        def scanner = new CommentScanner()
+        def comments = scanner.scan(x)
+        
+        assertThat(Comment.inComment(comments, 
+            new LineColumn(0, 4)), is(true))
+        assertThat(Comment.inComment(comments,
+            new LineColumn(1, 3)), is(true))
+        assertThat(Comment.inComment(comments,
+            new LineColumn(1, 2)), is(false))
+
     }
 }

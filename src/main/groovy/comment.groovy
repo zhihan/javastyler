@@ -29,7 +29,8 @@ class LineColumn {
     Boolean leq(LineColumn other) {
         if (column > 0) {
             (line < other.line) || 
-                ((line == other.line) && (column <= other.column))
+                ((line == other.line) && (
+                    (column <= other.column) || (other.column == -2)))
         } else {
             // end of line
             line < other.line
@@ -37,6 +38,10 @@ class LineColumn {
     }
 }
 
+/** 
+ * A simple comment in the source file is modeled with a start and end 
+ * position. 
+ */
 @ToString
 @EqualsAndHashCode
 class Comment {
@@ -56,6 +61,15 @@ class Comment {
     Boolean contains(LineColumn pos) {
         return start.leq(pos) && pos.leq(end)
     }
+
+    /** Test if a position in a file is in comment. */ 
+    static Boolean inComment(List<Comment> cmts, LineColumn pos) {
+        cmts.any{ it.contains(pos) }
+    }
+
+    static Boolean alwaysFalse(int x) {
+        return false
+    } 
 }
 
 /**

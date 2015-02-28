@@ -7,7 +7,9 @@ package me.zhihan.javastyler
   * by a whitespace.
   */
 class LeftParenthesisRule implements SingleLineRule {
-    Diagnostics analyze(String line) {
+    Diagnostics analyze(
+            String line, 
+            Closure isComment = { Comment.alwaysFalse(it) }) {
         int offset = 0
         QuoteMask mask = QuoteMask.doubleQuote(line)
 
@@ -17,6 +19,11 @@ class LeftParenthesisRule implements SingleLineRule {
                 return new Pass()
             }
             if (mask.masked(offset)) {
+                offset = offset + 1
+                continue
+            }
+
+            if (isComment(offset)) {
                 offset = offset + 1
                 continue
             }
@@ -58,7 +65,8 @@ class LeftParenthesisRule implements SingleLineRule {
     }
 
     /** Return a fixed line */
-    String fix(String line) {
+    String fix(String line,
+        Closure isComment = { Comment.alwaysFalse(it)}) {
         StringBuilder sb = new StringBuilder(line)
         
         int offset = 0
