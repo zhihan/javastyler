@@ -76,18 +76,16 @@ class Comment {
  * A simple class that scans a Java source file and process the comments
  */
 class CommentScanner {
-    Boolean inComment
-    Boolean inLineComment
-    LineColumn start
+    Boolean inComment = false
+    LineColumn start = null
 
-    List<String> buffer
-    Integer lineIdx
-    Integer colIdx
+    List<String> buffer = []
+    Integer lineIdx = 0
+    Integer colIdx = 0
     List<Comment> comments = []
 
     private void reset() {
         inComment = false
-        inLineComment = false
         comments.clear()
         start = null
         lineIdx = 0
@@ -110,6 +108,7 @@ class CommentScanner {
             (buffer.get(lineIdx).charAt(colIdx + 1) == '*')
     }
 
+    // "*/" is the end of a comment region.
     private Boolean isEndOfComment() {
         (inComment) &&
         buffer.get(lineIdx).charAt(colIdx) == '*' && 
@@ -117,15 +116,19 @@ class CommentScanner {
             (buffer.get(lineIdx).charAt(colIdx +1) == '/')
     }
 
+    // At the end of the current line
     private Boolean isEndOfLine() {
         colIdx == buffer.get(lineIdx).size() - 1
     }
 
+    // At the end of the current file
     private Boolean isEndOfFile() {
         (lineIdx == buffer.size() - 1) && 
         (colIdx == buffer.get(lineIdx).size() - 1)
     }
 
+    // Move to the next character
+    // Returns whether the scanner is at the end of the file.
     private Boolean moveToNext() {
         if (colIdx < buffer.get(lineIdx).size() - 1 ) {
             colIdx++; 
@@ -141,10 +144,12 @@ class CommentScanner {
         }
     }
 
+    // Move to the current end of line
     private void moveToEndOfLine() {
         colIdx = buffer.get(lineIdx).size() - 1
     }
 
+    // Handle the case of line comment and move to the end of line.
     private void handleLineComment() {
         Boolean isStart = isStartOfLineComment()
         if (isStart) {
@@ -156,7 +161,9 @@ class CommentScanner {
         }
     }
 
-    /** Scan a file and return a list of comments regions found in the file. */
+    /** 
+     * Scan a file and return a list of comments regions found in the file. 
+     */
     List<Comment> scan(List<String> lines) {
         buffer = lines
         reset()
