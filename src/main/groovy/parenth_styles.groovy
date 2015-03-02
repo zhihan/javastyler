@@ -7,9 +7,10 @@ package me.zhihan.javastyler
   * by a whitespace.
   */
 class LeftParenthesisRule implements SingleLineRule {
+    Closure canSkip = { col -> false };
+
     Diagnostics analyze(
-            String line, 
-            Closure isComment = { Comment.alwaysFalse(it) }) {
+            String line) {
         int offset = 0
         QuoteMask mask = QuoteMask.doubleQuote(line)
 
@@ -23,7 +24,7 @@ class LeftParenthesisRule implements SingleLineRule {
                 continue
             }
 
-            if (isComment(offset)) {
+            if (canSkip(offset)) {
                 offset = offset + 1
                 continue
             }
@@ -65,8 +66,7 @@ class LeftParenthesisRule implements SingleLineRule {
     }
 
     /** Return a fixed line */
-    String fix(String line,
-        Closure isComment = { Comment.alwaysFalse(it)}) {
+    String fix(String line) {
         StringBuilder sb = new StringBuilder(line)
         
         int offset = 0
@@ -120,7 +120,12 @@ class LeftParenthesisRule implements SingleLineRule {
             offset = offset + 1
         }
         return sb.toString();
-    }    
+    }
+
+    void setSkip(Closure isComment) {
+        canSkip = isComment
+    }
+
 }
 
 /**
@@ -214,6 +219,9 @@ class NoLeadingSpaceRule implements SingleLineRule {
     static SingleLineRule rightParenthesisRule() {
         new NoLeadingSpaceRule(token: ")")
     }
+
+    void setSkip(Closure isComment) {
+    }
 }
 
 class RequireLeadingSpaceRule implements SingleLineRule {
@@ -300,5 +308,8 @@ class RequireLeadingSpaceRule implements SingleLineRule {
 
     static SingleLineRule openBracketRule() {
         new RequireLeadingSpaceRule(token: "{")
+    }
+
+    void setSkip(Closure isComment) {
     }
 }

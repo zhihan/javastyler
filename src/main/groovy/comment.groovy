@@ -63,8 +63,8 @@ class Comment {
     }
 
     /** Test if a position in a file is in comment. */ 
-    static Boolean inComment(List<Comment> cmts, LineColumn pos) {
-        cmts.any{ it.contains(pos) }
+    static Boolean inComment(List<Comment> cmts, Integer row, Integer col) {
+        cmts.any{ it.contains(new LineColumn(row, col)) }
     }
 
     static Boolean alwaysFalse(int x) {
@@ -95,7 +95,8 @@ class CommentScanner {
     // '//' marks the start of a line comment
     private Boolean isStartOfLineComment() {
         (!inComment) && 
-        buffer.get(lineIdx).charAt(colIdx) == '/' &&
+        (colIdx < buffer.get(lineIdx).size() - 1) && 
+            buffer.get(lineIdx).charAt(colIdx) == '/' &&
             (colIdx < buffer.get(lineIdx).size() - 1) && 
             (buffer.get(lineIdx).charAt(colIdx + 1) == '/')
     }
@@ -103,7 +104,8 @@ class CommentScanner {
     // "/*" marks the start of a comment region
     private Boolean isStartOfComment() {
         (!inComment) &&
-        buffer.get(lineIdx).charAt(colIdx) == '/' && 
+        (colIdx < buffer.get(lineIdx).size() - 1) && 
+            (buffer.get(lineIdx).charAt(colIdx) == '/') && 
             (colIdx < buffer.get(lineIdx).size() - 1) && 
             (buffer.get(lineIdx).charAt(colIdx + 1) == '*')
     }
@@ -111,7 +113,8 @@ class CommentScanner {
     // "*/" is the end of a comment region.
     private Boolean isEndOfComment() {
         (inComment) &&
-        buffer.get(lineIdx).charAt(colIdx) == '*' && 
+        (colIdx < buffer.get(lineIdx).size() - 1) && 
+            buffer.get(lineIdx).charAt(colIdx) == '*' && 
             (colIdx < buffer.get(lineIdx).size() -1) && 
             (buffer.get(lineIdx).charAt(colIdx +1) == '/')
     }

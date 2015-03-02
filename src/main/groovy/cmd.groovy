@@ -109,8 +109,12 @@ class Tool {
     static Diagnostics analyze(List<String> lines, SingleLineRule rule) {
         List<Integer> problems = []
         List<Diagnostics> diags = []
-            
+        CommentScanner scanner = new CommentScanner()
+        final List<Comment> comments = scanner.scan(lines)
+
         for (int i = 0; i < lines.size(); i++) {
+            // Set a filter on whether to skip in the current line.
+            rule.setSkip{ col -> Comment.inComment(comments, i, col) }
             Diagnostics diag = rule.analyze(lines.get(i))
             if (!diag.passed()) {
                 problems.add(i)

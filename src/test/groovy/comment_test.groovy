@@ -69,12 +69,9 @@ class CommentTest {
         def scanner = new CommentScanner()
         def comments = scanner.scan(x)
         
-        assertThat(Comment.inComment(comments, 
-            new LineColumn(0, 4)), is(true))
-        assertThat(Comment.inComment(comments,
-            new LineColumn(1, 3)), is(true))
-        assertThat(Comment.inComment(comments,
-            new LineColumn(1, 2)), is(false))
+        assertThat(Comment.inComment(comments, 0, 4), is(true))
+        assertThat(Comment.inComment(comments, 1, 3), is(true))
+        assertThat(Comment.inComment(comments, 1, 2), is(false))
 
     }
 }

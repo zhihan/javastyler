@@ -25,4 +25,14 @@ class CommandTest {
         assertThat(diag.get(0).passed(), is(false))
         assertThat(diag.get(0).lines, is([0, 2]))
     }
+
+    @Test
+    void testSingleLineWithComment() {
+        URL url = ClassLoader.getSystemClassLoader().getResource("test_data2.java")
+        List<String> lines = url.readLines()
+        List<Diagnostics> diag = Tool.analyze(lines, [new LeftParenthesisRule()])
+
+        assertThat(diag.get(0).passed(), is(false))
+        assertThat(diag.get(0).lines, is([5]))
+    }
 } 

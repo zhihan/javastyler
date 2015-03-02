@@ -18,6 +18,9 @@ interface SingleLineRule {
 
     /** Return a fixed line */
     String fix(String line)
+
+    /** Whether should skip this location */
+    void setSkip(Closure isComment)
 } 
 
 /**
@@ -44,6 +47,9 @@ class LineWidthRule implements SingleLineRule {
     String fix(String line) {
         line
     }
+
+    void setSkip(Closure isComment) {
+    }
 }
 
 /** 
@@ -52,7 +58,10 @@ class LineWidthRule implements SingleLineRule {
   * No trailing whitespace is allowed. 
   */
 class TrailingSpaceRule implements SingleLineRule {
-    Diagnostics analyze(String line) {
+    Diagnostics analyze(String line ) {
+        if (line.size() == 0) {
+            return new Pass()
+        }
         if (Character.isWhitespace(line.charAt(line.size() - 1))) {
             return new Fail(msg: "Trailing whitespace found")
         } else {
@@ -65,12 +74,20 @@ class TrailingSpaceRule implements SingleLineRule {
     }
 
     String fix(String line) {
+        if (line.size() == 0) {
+            return new Pass()
+        }
         int i = line.size() - 1
         while (Character.isWhitespace(line.charAt(i)) && i > 0) {
             i = i - 1;
         }
         line.substring(0, i + 1)
     }
+
+    void setSkip(Closure isComment) {
+    }
+
+
 }
 
 /** 
@@ -109,5 +126,8 @@ class LeadingTabRule implements SingleLineRule {
         }
         return sb.toString()
     }
+    void setSkip(Closure isComment) {
+    }
+
 }
 

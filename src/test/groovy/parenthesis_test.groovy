@@ -14,6 +14,15 @@ class ParenthesisTest {
     } 
 
     @Test
+    void testLeftParenthesisPassOnEmpty() {
+        String line = ''
+        SingleLineRule rule = new LeftParenthesisRule()
+
+        assertThat(rule.analyze(line).passed(), is(true))
+    } 
+
+
+    @Test
     void testLeftParenthesisPass2() {
         String line = 'if (a > 1) {'
         SingleLineRule rule = new LeftParenthesisRule()
