@@ -7,6 +7,7 @@ package me.zhihan.javastyler
   * by a whitespace.
   */
 class LeftParenthesisRule implements SingleLineRule {
+    // By default do not ignore anything
     Closure canSkip = { col -> false };
 
     Diagnostics analyze(
@@ -80,6 +81,10 @@ class LeftParenthesisRule implements SingleLineRule {
                 offset = offset + 1
                 continue
             }
+            if (canSkip(offset)) {
+                offset = offset + 1
+                continue
+            }
             if (offset > 0 && Character.isWhitespace(sb.charAt(offset - 1))) {
                 int r = offset - 1
                 while(r >= 0 && Character.isWhitespace(sb.charAt(r))) {
@@ -134,6 +139,12 @@ class LeftParenthesisRule implements SingleLineRule {
  * A few tokens should not follow a space, such as ')' or ';'
  */
 class NoLeadingSpaceRule implements SingleLineRule {
+    // By default do not ignore anything
+    Closure canSkip = { col -> false };
+    void setSkip(Closure isComment) {
+        canSkip = isComment
+    }
+
     String token;
 
     /** A fix can be provided based on the diagnostics */
@@ -151,6 +162,10 @@ class NoLeadingSpaceRule implements SingleLineRule {
                 return new Pass()
             }
             if (mask.masked(offset)) {
+                offset = offset + 1
+                continue
+            }
+            if (canSkip(offset)) {
                 offset = offset + 1
                 continue
             }
@@ -187,6 +202,10 @@ class NoLeadingSpaceRule implements SingleLineRule {
                 offset = offset + 1
                 continue
             }
+            if (canSkip(offset)) {
+                offset = offset + 1
+                continue
+            }
 
             if (offset > 0 && Character.isWhitespace(sb.charAt(offset - 1))) {
                 int r = offset - 1
@@ -219,13 +238,15 @@ class NoLeadingSpaceRule implements SingleLineRule {
     static SingleLineRule rightParenthesisRule() {
         new NoLeadingSpaceRule(token: ")")
     }
-
-    void setSkip(Closure isComment) {
-    }
 }
 
 class RequireLeadingSpaceRule implements SingleLineRule {
     String token
+    // By default do not ignore anything
+    Closure canSkip = { col -> false };
+    void setSkip(Closure isComment) {
+        canSkip = isComment
+    }
 
     Diagnostics analyze(String line) {
         int offset = 0
@@ -238,6 +259,10 @@ class RequireLeadingSpaceRule implements SingleLineRule {
             }
             if (mask.masked(offset)) {
                 offset = offset + 1
+                continue
+            }
+            if (canSkip(offset)) {
+                offset += 1
                 continue
             }
 
@@ -274,6 +299,11 @@ class RequireLeadingSpaceRule implements SingleLineRule {
                 offset = offset + 1
                 continue
             }
+           if (canSkip(offset)) {
+                offset += 1
+                continue
+            }
+
 
             if (offset > 0 && !Character.isWhitespace(sb.charAt(offset - 1))) {
                 sb.insert(offset, ' ')
@@ -308,8 +338,5 @@ class RequireLeadingSpaceRule implements SingleLineRule {
 
     static SingleLineRule openBracketRule() {
         new RequireLeadingSpaceRule(token: "{")
-    }
-
-    void setSkip(Closure isComment) {
     }
 }
