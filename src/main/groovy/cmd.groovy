@@ -27,6 +27,7 @@ class Pass extends Diagnostics {
     }
 }
 
+/** Failed diagnostic */
 class Fail extends Diagnostics {
     String msg
     Boolean passed() {
@@ -38,6 +39,7 @@ class Fail extends Diagnostics {
     }
 }
 
+/** A diagnostic with line numbers attached */
 class FailWithLineNumber extends Diagnostics {
     String rule
     List<Integer> lines
@@ -53,7 +55,6 @@ class FailWithLineNumber extends Diagnostics {
 
 /**
  * Main entry of the analysis 
- *
  */
 class Tool {
     static void printHelp(Options options) {
@@ -86,6 +87,7 @@ class Tool {
             return
         } 
 
+        // Analyze a file
         if (cmd.hasOption("f")) {
             String fileName = cmd.getOptionValue("f")
             List<String> lines = new File(fileName).readLines()
@@ -103,6 +105,7 @@ class Tool {
             }
         }
     }
+    
     /**
      * Analyze the whole file using a single line rule.
      */
@@ -129,6 +132,9 @@ class Tool {
         }
     }
 
+    /**
+     * Analyze the whole file using multiple rules.
+     */
     static List<Diagnostics> analyze(List<String> lines, List<SingleLineRule> rules) {
         rules.collect{rule -> analyze(lines, rule)}
     }
