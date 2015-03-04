@@ -139,5 +139,20 @@ class Tool {
         rules.collect{rule -> analyze(lines, rule)}
     }
 
+    static Diagnostics analyze(List<String> lines, MultiLineRule rule) {
+        CommentScanner scanner = new CommentScanner()
+        final List<Comment> comments = scanner.scan(lines)
+
+        rule.setSkip{ row, col -> Comment.inComment(comments, row, col) }
+        return rule.analyze(lines)
+    }
+
+    static List<String> fix(List<String> lines, MultiLineRule rule) {
+        CommentScanner scanner = new CommentScanner()
+        final List<Comment> comments = scanner.scan(lines)
+
+        rule.setSkip{ row, col -> Comment.inComment(comments, row, col) }
+        return rule.fix(lines)
+    }
 } 
 
