@@ -141,22 +141,55 @@ class CommentScanner {
             (buffer.get(lineIdx).charAt(colIdx +1) == '/')
     }
 
-    // Move to the next character
-    // Returns whether the scanner is at the end of the file.
+    /** 
+      * Move to the next character.
+      * @return whether the scanner is at the end of the buffer. 
+      */
     private Boolean moveToNext() {
         if (colIdx < buffer.get(lineIdx).size() - 1 ) {
             colIdx++; 
-            return true
+            true
         } else {
+            // End of line
             if (lineIdx < buffer.size() - 1) {
                 lineIdx++;
                 colIdx = 0
-                return true
+                true
             } else {
-                return false
+                // End of buffer
+                false
             }
         }
     }
+
+    // Handle the case of starting a region comment.
+    private Boolean handleStartComment() {
+        if (isStartOfComment()) {
+            start = new LineColumn(lineIdx, colIdx)
+            inComment = true
+            colIdx++
+            true
+        } else {
+            false
+        }
+    }
+
+    // Handles the case of ending a region comment.
+    private Boolean handleEndComment() {
+        // Not in comment
+        if (isEndOfComment()) {
+            def e = new LineColumn(lineIdx, colIdx + 1)
+            comments.add(new Comment(start, e))
+            start = null
+            inComment = false
+            colIdx++
+            true
+        } else {
+            false
+        }
+
+    }
+
 
     // Move to the current end of line
     private void moveToEndOfLine() {
@@ -164,7 +197,7 @@ class CommentScanner {
     }
 
     // Handle the case of line comment and move to the end of line.
-    private void handleLineComment() {
+    private Boolean handleLineComment() {
         Boolean isStart = isStartOfLineComment()
         if (isStart) {
             // The remainder of the line is comment
@@ -173,10 +206,14 @@ class CommentScanner {
             comments.add(new Comment(s, e))
             moveToEndOfLine()
         }
+        isStart
     }
+
 
     /** 
      * Scan a file and return a list of comments regions found in the file. 
+     *
+     * @return List of Comment objects representing the commented regions.
      */
     List<Comment> scan(List<String> lines) {
         buffer = lines
@@ -192,8 +229,13 @@ class CommentScanner {
 
         while (moveToNext()) {
             // Only need to process if it is not in Quote
-            if (!inQuote) {
-                // Mark quote if 
+            if (inQuote) {
+                if (isEndOfQuote()) {
+                    inQuote = false
+                    continue
+                }
+            } else {
+                // Not in quote, 
                 if (isStartOfQuote()) {
                     if (isStartOfQuote()) {
                         inQuote = true;
@@ -202,30 +244,18 @@ class CommentScanner {
                 }
 
                 if (!inComment) {
-                    // Handle region comment
-                    if (isStartOfComment()) {
-                        start = new LineColumn(lineIdx, colIdx)
-                        inComment = true
-                        colIdx++
-                    } else {
-                        handleLineComment()
+                    if (handleStartComment()) {
+                        continue
+                    }
+                    if (handleLineComment()) {
+                        continue
                     }
                 } else {
-                    // Not in comment
-                    if (isEndOfComment()) {
-                        def e = new LineColumn(lineIdx, colIdx + 1)
-                        comments.add(new Comment(start, e))
-                        start = null
-                        inComment = false
-                        colIdx++
+                    if (handleEndComment()) {
+                        continue
                     }
                 }
-            } else {
-                if (isEndOfQuote()) {
-                    inQuote = false
-                    continue
-                }
-            }
+            } 
         } 
         comments
     }
