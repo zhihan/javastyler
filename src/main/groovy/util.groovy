@@ -4,11 +4,20 @@ import groovy.transform.ToString
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 
+/** A pair of integer representing a range. Including the left boundary, 
+ * exluding the right. */
 class PairInt {
     Integer start
     Integer end
+
+    /** Returns true if the integer is between the two ends. */
     Boolean between(Integer i) {
         return (start <= i) && (i < end)
+    }
+
+    /** Returns whether the pair of int represents an empty range. */
+    Boolean isEmpty() {
+        return start >= end
     }
 }
 

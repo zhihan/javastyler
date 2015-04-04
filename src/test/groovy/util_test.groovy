@@ -20,4 +20,18 @@ class UtilTest {
         assertThat(StringUtil.findToken(a), is("abc"))
         assertThat(StringUtil.findToken("   "), is(""))
     }
+
+    @Test
+    void testPairInt() {
+        def x = new PairInt(start:0, end:0) 
+        assertThat(x.isEmpty(), is(true))
+        assertThat(x.between(0), is(false))
+        assertThat(x.between(1), is(false))
+
+        def y = new PairInt(start:0, end:1)
+        assertThat(y.isEmpty(), is(false))
+        assertThat(y.between(0), is(true))
+        assertThat(y.between(1), is(false))
+        assertThat(y.between(-1), is(false))
+    }
 }
