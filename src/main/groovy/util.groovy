@@ -1,11 +1,13 @@
 package me.zhihan.javastyler
 
 import groovy.transform.ToString
+import groovy.transform.CompileStatic 
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 
 /** A pair of integer representing a range. Including the left boundary, 
  * exluding the right. */
+ @CompileStatic
 class PairInt {
     Integer start
     Integer end
