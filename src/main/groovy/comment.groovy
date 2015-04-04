@@ -2,6 +2,7 @@ package me.zhihan.javastyler
 
 import groovy.transform.ToString
 import groovy.transform.EqualsAndHashCode
+import groovy.transform.CompileStatic
 
 import java.util.regex.Matcher
 import java.util.regex.Pattern
@@ -12,14 +13,17 @@ import java.util.regex.Pattern
  */
 @ToString
 @EqualsAndHashCode
+@CompileStatic
 class LineColumn {
     Integer line
     Integer column
 
+    /** Returns a LineColumn object representing the end of line for the given line number. */
     static LineColumn endOfLine(Integer l) {
         return new LineColumn(l, -2)
     }
 
+    /* Returns a LineColumn object representing the location. */ 
     LineColumn(Integer l, Integer c) {
         line = l
         column = c
@@ -44,6 +48,7 @@ class LineColumn {
  */
 @ToString
 @EqualsAndHashCode
+@CompileStatic
 class Comment {
     LineColumn start
     LineColumn end
@@ -76,7 +81,8 @@ class Comment {
  * A simple class that scans a Java source file and process the comments
  */
 class CommentScanner {
-    Boolean inComment = false
+    Boolean inComment = false  // Current position is in comment
+    Boolean inQuote = false // Current position is in quote
     LineColumn start = null
 
     List<String> buffer = []
@@ -90,6 +96,22 @@ class CommentScanner {
         start = null
         lineIdx = 0
         colIdx = 0
+    }
+
+    // '"' marks the start of a quote
+    private Boolean isStartOfQuote() {
+        (!inQuote) &&
+        (colIdx < buffer.get(lineIdx).size() && 
+            buffer.get(lineIdx).charAt(colIdx) == '"')
+    }
+
+    // '"' without a leading escape character marks the end of current quote.
+    private Boolean isEndOfQuote() {
+        inQuote &&
+        (colIdx < buffer.get(lineIdx).size() &&
+         buffer.get(lineIdx).charAt(colIdx) == '"') && 
+        (colIdx > 0 && buffer.get(lineIdx).charAt(colIdx-1) != '\\')
+
     }
 
     // '//' marks the start of a line comment
@@ -117,17 +139,6 @@ class CommentScanner {
             buffer.get(lineIdx).charAt(colIdx) == '*' && 
             (colIdx < buffer.get(lineIdx).size() -1) && 
             (buffer.get(lineIdx).charAt(colIdx +1) == '/')
-    }
-
-    // At the end of the current line
-    private Boolean isEndOfLine() {
-        colIdx == buffer.get(lineIdx).size() - 1
-    }
-
-    // At the end of the current file
-    private Boolean isEndOfFile() {
-        (lineIdx == buffer.size() - 1) && 
-        (colIdx == buffer.get(lineIdx).size() - 1)
     }
 
     // Move to the next character
@@ -180,27 +191,43 @@ class CommentScanner {
         handleLineComment() // If the remainder is line comment, process it
 
         while (moveToNext()) {
-            if (!inComment) {
-                if (isStartOfComment()) {
-                    start = new LineColumn(lineIdx, colIdx)
-                    inComment = true
-                    colIdx++
-                } else {
-                    handleLineComment()
+            // Only need to process if it is not in Quote
+            if (!inQuote) {
+                // Mark quote if 
+                if (isStartOfQuote()) {
+                    if (isStartOfQuote()) {
+                        inQuote = true;
+                        continue
+                    }
                 }
 
+                if (!inComment) {
+                    // Handle region comment
+                    if (isStartOfComment()) {
+                        start = new LineColumn(lineIdx, colIdx)
+                        inComment = true
+                        colIdx++
+                    } else {
+                        handleLineComment()
+                    }
+                } else {
+                    // Not in comment
+                    if (isEndOfComment()) {
+                        def e = new LineColumn(lineIdx, colIdx + 1)
+                        comments.add(new Comment(start, e))
+                        start = null
+                        inComment = false
+                        colIdx++
+                    }
+                }
             } else {
-                if (isEndOfComment()) {
-                    def e = new LineColumn(lineIdx, colIdx + 1)
-                    comments.add(new Comment(start, e))
-                    start = null
-                    inComment = false
-                    colIdx++
+                if (isEndOfQuote()) {
+                    inQuote = false
+                    continue
                 }
             }
-        }
+        } 
         comments
     }
-
 }
 

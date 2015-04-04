@@ -5,9 +5,11 @@ import groovy.transform.CompileStatic
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 
-/** A pair of integer representing a range. Including the left boundary, 
- * exluding the right. */
- @CompileStatic
+/** 
+ * A pair of integer representing a range. Including the left boundary, 
+ * exluding the right. 
+ */
+@CompileStatic
 class PairInt {
     Integer start
     Integer end
@@ -69,6 +71,7 @@ class QuoteMask {
 }
 
 /** Utility for stirng manipulations */
+@CompileStatic
 class StringUtil {
     static lastToken(String s, int offset) {
         int i = offset - 1

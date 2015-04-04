@@ -5,14 +5,13 @@ import org.junit.Test
 import static org.hamcrest.MatcherAssert.assertThat
 import static org.hamcrest.Matchers.* 
 
-class CommentTest {
+class LineColumnTest {
     @Test
     void testLineColumn() {
         def a = new LineColumn(0, 2)
         def b = new LineColumn(0, 2)
 
         assertThat(a, is(b))
-
         def c = new LineColumn(0, 3)
         assertThat(a, is(not(equalTo(c))))
 
@@ -32,7 +31,15 @@ class CommentTest {
         assertThat(a.leq(c), is(true))
         assertThat(b.leq(c), is(true))
     }
+}
 
+class CommentTest {
+    @Test
+    void testAlwaysFalse() {
+        def pred = { Comment.alwaysFalse(it) }
+        assertThat(pred(1), is(false))
+        assertThat(pred(0), is(false))
+    }
 
     @Test
     void testScanComments() {
@@ -72,6 +79,14 @@ class CommentTest {
         assertThat(Comment.inComment(comments, 0, 4), is(true))
         assertThat(Comment.inComment(comments, 1, 3), is(true))
         assertThat(Comment.inComment(comments, 1, 2), is(false))
+    }
 
+    @Test
+    void testCommentShouldIgoreSlashInQuotes() {
+        def x = ["String x = \" // \";"]
+        def scanner = new CommentScanner()
+        def comments = scanner.scan(x)
+
+        assertThat(comments.isEmpty(), is(true))
     }
 }
