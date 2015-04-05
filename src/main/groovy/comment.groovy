@@ -53,16 +53,19 @@ class Comment {
     LineColumn start
     LineColumn end
 
+    /** Create new comment giving start and end positions (line and columns)*/
     Comment(Integer sl, Integer sc, Integer el, Integer ec) {
         start = new LineColumn(sl, sc)
         end = new LineColumn(el, ec)
     }
 
+    /** Create new comment giving start and end positions (line and columns)*/
     Comment(LineColumn s, LineColumn e) {
         start = s
         end = e
     }
 
+    /** Returns true if the position is contained in the given range. */
     Boolean contains(LineColumn pos) {
         return start.leq(pos) && pos.leq(end)
     }
@@ -72,6 +75,7 @@ class Comment {
         cmts.any{ it.contains(new LineColumn(row, col)) }
     }
 
+    /** A predicate that always returns false */
     static Boolean alwaysFalse(int x) {
         return false
     } 

@@ -42,6 +42,28 @@ class CommentTest {
     }
 
     @Test
+    void testToString() {
+        def a = new Comment(0, 0, 1, 80)
+        assertThat(a.toString().size(), greaterThan(10))
+    }
+
+    @Test
+    void testEquals() {
+        def a = new Comment(0, 0, 1, 1)
+        def b = new Comment(0, 0, 1, 20)
+        def c = new Comment(0, 0, 1, 1)
+
+        assertThat(a.equals(b), is(false))
+        assertThat(a.equals(c), is(true))
+        assertThat(a.equals("String"), is(false))
+        assertThat(a.hashCode(), equalTo(c.hashCode()))
+        assertThat(a.hashCode(), not(b.hashCode()))
+    }
+}
+
+class CommentScannerTest {
+
+    @Test
     void testScanComments() {
         def x = ["/* aa ", "bb */"]
         def scanner = new CommentScanner()
