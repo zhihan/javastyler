@@ -74,7 +74,6 @@ class Tool {
     }
 
     static void main(String[] args) {
-
         Options options = new Options()
         options.addOption("f", "file", true, "Enter file name")
         options.addOption("h", "help", false, "Display help")

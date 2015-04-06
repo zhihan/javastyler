@@ -50,19 +50,28 @@ class CommentTest {
     @Test
     void testEquals() {
         def a = new Comment(0, 0, 1, 1)
-        def b = new Comment(0, 0, 1, 20)
         def c = new Comment(0, 0, 1, 1)
 
-        assertThat(a.equals(b), is(false))
         assertThat(a.equals(c), is(true))
+        assertThat(a.equals(a), is(true))
+        assertThat(a.equals(null), is(false))
         assertThat(a.equals("String"), is(false))
+        assertThat(a.equals(new Comment(1, 0, 1, 1)), is(false))
+        
+        def start = new LineColumn(0, 0)
+        def end = new LineColumn(1, 1)
+        def x = new Comment(start, end)
+        assertThat(x.equals(new Comment(start, end)), is(true))
+        assertThat(x.equals(new Comment(start, new LineColumn(1, 1))), is(true))
+        assertThat(x.equals(new Comment(start, new LineColumn(1, 2))), is(false))
+
+        def b = new Comment(2, 0, 1, 1)
         assertThat(a.hashCode(), equalTo(c.hashCode()))
         assertThat(a.hashCode(), not(b.hashCode()))
     }
 }
 
 class CommentScannerTest {
-
     @Test
     void testScanComments() {
         def x = ["/* aa ", "bb */"]
@@ -71,6 +80,21 @@ class CommentScannerTest {
         def comments = scanner.scan(x)
         assertThat(comments.size(), is(1))
         assertThat(comments.get(0), is(new Comment(0, 0, 1, 4)))
+    }
+
+    @Test
+    void testScanCommentsByPassSlash() {
+        def x = ["/ aa ", "cc / ", "* d", "/*bb */"]
+        def scanner = new CommentScanner()
+
+        def comments = scanner.scan(x)
+        assertThat(comments.size(), is(1))
+        assertThat(comments.get(0), is(new Comment(3, 0, 3, 6)))
+
+        def x2 = ["/* /* aa */"]
+        def comments2 = scanner.scan(x2)
+        assertThat(comments.size(), is(1))
+        assertThat(comments.get(0), is(new Comment(0, 0, 0, 10)))
     }
 
     @Test 

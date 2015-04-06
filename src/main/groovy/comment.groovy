@@ -15,16 +15,16 @@ import java.util.regex.Pattern
 @EqualsAndHashCode
 @CompileStatic
 class LineColumn {
-    Integer line
-    Integer column
+    int line
+    int column
 
     /** Returns a LineColumn object representing the end of line for the given line number. */
-    static LineColumn endOfLine(Integer l) {
+    static LineColumn endOfLine(int l) {
         return new LineColumn(l, -2)
     }
 
     /* Returns a LineColumn object representing the location. */ 
-    LineColumn(Integer l, Integer c) {
+    LineColumn(int l, int c) {
         line = l
         column = c
     } 
@@ -54,13 +54,15 @@ class Comment {
     LineColumn end
 
     /** Create new comment giving start and end positions (line and columns)*/
-    Comment(Integer sl, Integer sc, Integer el, Integer ec) {
+    Comment(int sl, int sc, int el, int ec) {
         start = new LineColumn(sl, sc)
         end = new LineColumn(el, ec)
     }
 
     /** Create new comment giving start and end positions (line and columns)*/
     Comment(LineColumn s, LineColumn e) {
+        assert(s != null)
+        assert(e != null)
         start = s
         end = e
     }
@@ -71,7 +73,7 @@ class Comment {
     }
 
     /** Test if a position in a file is in comment. */ 
-    static Boolean inComment(List<Comment> cmts, Integer row, Integer col) {
+    static Boolean inComment(List<Comment> cmts, int row, int col) {
         cmts.any{ it.contains(new LineColumn(row, col)) }
     }
 
@@ -84,6 +86,7 @@ class Comment {
 /**
  * A simple class that scans a Java source file and process the comments
  */
+@CompileStatic
 class CommentScanner {
     Boolean inComment = false  // Current position is in comment
     Boolean inQuote = false // Current position is in quote
@@ -123,7 +126,6 @@ class CommentScanner {
         (!inComment) && 
         (colIdx < buffer.get(lineIdx).size() - 1) && 
             buffer.get(lineIdx).charAt(colIdx) == '/' &&
-            (colIdx < buffer.get(lineIdx).size() - 1) && 
             (buffer.get(lineIdx).charAt(colIdx + 1) == '/')
     }
 
@@ -132,7 +134,6 @@ class CommentScanner {
         (!inComment) &&
         (colIdx < buffer.get(lineIdx).size() - 1) && 
             (buffer.get(lineIdx).charAt(colIdx) == '/') && 
-            (colIdx < buffer.get(lineIdx).size() - 1) && 
             (buffer.get(lineIdx).charAt(colIdx + 1) == '*')
     }
 

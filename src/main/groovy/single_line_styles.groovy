@@ -1,5 +1,6 @@
 package me.zhihan.javastyler
 
+import groovy.transform.CompileStatic
 /**
  * Single line styles 
  * 
@@ -29,6 +30,7 @@ interface SingleLineRule {
   * A line in the source file should not exceeds 80 or 100 characters. 
   * No fix provided.
   */
+@CompileStatic
 class LineWidthRule implements SingleLineRule {
     Integer width
 

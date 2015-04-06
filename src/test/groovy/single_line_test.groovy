@@ -12,6 +12,7 @@ class SingleLineTest {
         SingleLineRule rule = new LineWidthRule(width: 80)
         
         assertThat(rule.analyze(line).passed(), is(true))
+
     }
 
     @Test
@@ -24,6 +25,7 @@ class SingleLineTest {
         assertThat(d.passed(), is(false))
         assertThat(d.message().indexOf("100"), greaterThan(0))
         assertThat(rule.canFix(line), is(false))
+        assertThat(rule.fix(line), is(line))
     }
 
     @Test
