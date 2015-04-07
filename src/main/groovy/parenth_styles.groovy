@@ -1,5 +1,7 @@
 package me.zhihan.javastyler
 
+import groovy.transform.CompileStatic
+
 /** 
   * Left parenthesis rule
   *
@@ -138,6 +140,7 @@ class LeftParenthesisRule implements SingleLineRule {
  * 
  * A few tokens should not follow a space, such as ')' or ';'
  */
+@CompileStatic
 class NoLeadingSpaceRule implements SingleLineRule {
     // By default do not ignore anything
     Closure canSkip = { col -> false };
@@ -145,7 +148,7 @@ class NoLeadingSpaceRule implements SingleLineRule {
         canSkip = isComment
     }
 
-    String token;
+    String token
 
     /** A fix can be provided based on the diagnostics */
     Boolean canFix(String line) {
@@ -156,10 +159,11 @@ class NoLeadingSpaceRule implements SingleLineRule {
         int offset = 0
         QuoteMask mask = QuoteMask.doubleQuote(line)
 
+        println(line)
         while (offset >= 0 && offset < line.size()) {
             offset = line.indexOf(token, offset)
             if (offset < 0) {
-                return new Pass()
+                break
             }
             if (mask.masked(offset)) {
                 offset = offset + 1

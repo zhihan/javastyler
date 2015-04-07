@@ -92,8 +92,45 @@ class ParenthesisTest {
 
         assertThat(rule.analyze(line).passed(), is(true))
         assertThat(rule.fix(line), is(line))
+    }
+
+    @Test
+    void testSemicolonPassIfNone() {
+        String line = '  if (x)' // continued line
+        SingleLineRule rule = NoLeadingSpaceRule.semiColonRule()
+
+        assertThat(rule.analyze(line).passed(), is(true))
+        assertThat(rule.fix(line), is(line))
     } 
     
+    @Test
+    void testSemicolonPassIfMasked() {
+        String line = '  if (x == ";")' // continued line
+        SingleLineRule rule = NoLeadingSpaceRule.semiColonRule()
+
+        assertThat(rule.analyze(line).passed(), is(true))
+        assertThat(rule.fix(line), is(line))
+    } 
+
+    @Test
+    void testSemicolonPassIfSkip() {
+        String line = ' // if (x == 0) ;' // continued line
+        SingleLineRule rule = NoLeadingSpaceRule.semiColonRule()
+
+        rule.setSkip({ offset -> offset > 1})
+        assertThat(rule.analyze(line).passed(), is(true))
+        assertThat(rule.fix(line), is(line))
+    } 
+
+    @Test
+    void testSemicolonPassIfEmptyLine() {
+        String line = '    ;' // empty line
+        SingleLineRule rule = NoLeadingSpaceRule.semiColonRule()
+
+        assertThat(rule.analyze(line).passed(), is(true))
+        assertThat(rule.fix(line), is(line))
+    }
+
     @Test
     void testSemicolonFail() {
         String line = '  Integer i = 0  ;' // continued line
