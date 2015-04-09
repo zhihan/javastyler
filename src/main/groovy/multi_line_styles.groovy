@@ -1,5 +1,7 @@
 package me.zhihan.javastyler
 
+import groovy.transform.CompileStatic
+
 interface MultiLineRule {
     /** Analyze a file and provide diagnostics */
     Diagnostics analyze(List<String> lines)
@@ -16,14 +18,17 @@ interface MultiLineRule {
  *
  * There should not be two or more consecutive empty lines
  */
+@CompileStatic
 class EmptyLinesRule implements MultiLineRule {
     Closure canSkip = { col, row -> false }
 
+    // Returns true if the line contains only whitespaces
     private Boolean isEmpty(String line) {
         line.trim().empty
     }
 
-    List<PairInt> findRegions(List<String> lines) {
+    // Find regions of empty lines
+    private List<PairInt> findRegions(List<String> lines) {
         List<Boolean> empty = lines.collect { isEmpty(it) }
         List<PairInt> regions = []
 

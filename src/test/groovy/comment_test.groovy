@@ -21,6 +21,19 @@ class LineColumnTest {
     }
 
     @Test
+    void testEquals() {
+        LineColumn a = new LineColumn(0, 0)
+        assertThat(a.equals(null), is(false))
+        assertThat(a.equals(a), is(true))
+        assertThat(a.equals("String"), is(false))
+        assertThat(a.equals(new LineColumn(0, 0)), is(true))
+        assertThat(a.equals(new LineColumn(0, 1)), is(false))
+        assertThat(a.equals(new LineColumn(1, 1)), is(false))
+
+        assertThat(a.hashCode(), not(1))
+    }
+
+    @Test
     void testLineColumnLeq() {
         def a = new LineColumn(1, 1)
         def b = new LineColumn(0, 1)
@@ -42,32 +55,12 @@ class CommentTest {
     }
 
     @Test
-    void testToString() {
-        def a = new Comment(0, 0, 1, 80)
-        assertThat(a.toString().size(), greaterThan(10))
-    }
-
-    @Test
     void testEquals() {
         def a = new Comment(0, 0, 1, 1)
-        def c = new Comment(0, 0, 1, 1)
-
-        assertThat(a.equals(c), is(true))
-        assertThat(a.equals(a), is(true))
         assertThat(a.equals(null), is(false))
-        assertThat(a.equals("String"), is(false))
-        assertThat(a.equals(new Comment(1, 0, 1, 1)), is(false))
-        
-        def start = new LineColumn(0, 0)
-        def end = new LineColumn(1, 1)
-        def x = new Comment(start, end)
-        assertThat(x.equals(new Comment(start, end)), is(true))
-        assertThat(x.equals(new Comment(start, new LineColumn(1, 1))), is(true))
-        assertThat(x.equals(new Comment(start, new LineColumn(1, 2))), is(false))
-
-        def b = new Comment(2, 0, 1, 1)
-        assertThat(a.hashCode(), equalTo(c.hashCode()))
-        assertThat(a.hashCode(), not(b.hashCode()))
+        assertThat(a.equals(a), is(true))
+        assertThat(a.equals("False"), is(false))
+        assertThat(a.equals(new Comment(0, 0, 1, 1)), is(true))
     }
 }
 

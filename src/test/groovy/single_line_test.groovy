@@ -96,7 +96,5 @@ class SingleLineTest {
 
         assertThat(rule.analyze(line).passed(), is(false))
         assertThat(rule.fix(line), is("      Integer i;"))
-    } 
-
- 
+    }  
 }

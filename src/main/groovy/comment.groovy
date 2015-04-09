@@ -1,8 +1,7 @@
 package me.zhihan.javastyler
 
-import groovy.transform.ToString
-import groovy.transform.EqualsAndHashCode
 import groovy.transform.CompileStatic
+import groovy.transform.EqualsAndHashCode
 
 import java.util.regex.Matcher
 import java.util.regex.Pattern
@@ -11,10 +10,9 @@ import java.util.regex.Pattern
  * Simple class to represent a position in the source file by
  * line and column number 
  */
-@ToString
-@EqualsAndHashCode
 @CompileStatic
-class LineColumn {
+@EqualsAndHashCode(useCanEqual = false)
+final class LineColumn {
     int line
     int column
 
@@ -46,10 +44,9 @@ class LineColumn {
  * A simple comment in the source file is modeled with a start and end 
  * position. 
  */
-@ToString
-@EqualsAndHashCode
 @CompileStatic
-class Comment {
+@EqualsAndHashCode(useCanEqual = false)
+final class Comment {
     LineColumn start
     LineColumn end
 
@@ -61,8 +58,6 @@ class Comment {
 
     /** Create new comment giving start and end positions (line and columns)*/
     Comment(LineColumn s, LineColumn e) {
-        assert(s != null)
-        assert(e != null)
         start = s
         end = e
     }

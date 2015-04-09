@@ -47,4 +47,6 @@ class MultiLineTest {
 
         assertThat(diag.passed(), is(true))
     }
+
+
 } 
