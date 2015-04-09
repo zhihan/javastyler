@@ -8,42 +8,45 @@ import groovy.transform.CompileStatic
   * Left parenthesis should not follow a whitespace and should not be followed
   * by a whitespace.
   */
+@CompileStatic
 class LeftParenthesisRule implements SingleLineRule {
     // By default do not ignore anything
     Closure canSkip = { col -> false };
 
-    Diagnostics analyze(
-            String line) {
+    private int lastNonWhiteSpace(String line, int offset) {
+        int pos = offset - 1
+        while(pos >= 0 && Character.isWhitespace(line.charAt(pos))) {
+            pos = pos - 1
+        }
+        pos
+    }
+
+     /** Analyzes a single line and look for left parenthesis problems. */
+    Diagnostics analyze(String line) {
         int offset = 0
         QuoteMask mask = QuoteMask.doubleQuote(line)
 
-        while (offset >= 0 && offset < line.size()) {
+        while (offset < line.size()) {
             offset = line.indexOf("(", offset)
-            if (offset <0) {
+            if (offset < 0) {
                 return new Pass()
             }
-            if (mask.masked(offset)) {
+            if (mask.masked(offset) ||
+                canSkip(offset)) {
                 offset = offset + 1
                 continue
             }
 
-            if (canSkip(offset)) {
-                offset = offset + 1
-                continue
-            }
-
-            if (offset > 0 && Character.isWhitespace(line.charAt(offset - 1))) {
-                int r = offset - 1
-                while(r >= 0 && Character.isWhitespace(line.charAt(r))) {
-                    r = r - 1
-                }
+            if (offset > 0 && 
+                Character.isWhitespace(line.charAt(offset - 1))) {
+                int r = lastNonWhiteSpace(line, offset)
                 if (r == -1) { // continued line
                     offset = offset + 1
                     continue
                 }
                 
-                if (StringUtil.isControlKeyword(
-                    StringUtil.lastToken(line, r + 1))) {
+                String lastToken = StringUtil.lastToken(line, r + 1)
+                if (StringUtil.isControlKeyword(lastToken)) {
                     offset = offset + 1
                     continue
                 } 
@@ -55,7 +58,8 @@ class LeftParenthesisRule implements SingleLineRule {
                     continue
                 }
             }
-            if (offset < line.size() - 2 && Character.isWhitespace(line.charAt(offset + 1)) ) {
+            if (offset < line.size() - 1 && 
+                Character.isWhitespace(line.charAt(offset + 1)) ) {
                 return new Fail(msg: "Extra space after '(' at $offset")
             }
             offset = offset + 1
@@ -68,47 +72,53 @@ class LeftParenthesisRule implements SingleLineRule {
         return true
     }
 
+    private void deleteWhitespaceBackward(StringBuilder sb, int startIdx, int endIdx) {
+        int deleteIdx = endIdx - 1
+        while (deleteIdx > startIdx) {
+            sb.deleteCharAt(deleteIdx)
+            deleteIdx = deleteIdx - 1
+        }
+    }
+
+    private void deleteWhitespaceForward(StringBuilder sb, int pos) {
+        while (pos < sb.size() && 
+            Character.isWhitespace(sb.charAt(pos))) {
+            sb.deleteCharAt(pos)
+        }
+    }
+
     /** Return a fixed line */
     String fix(String line) {
         StringBuilder sb = new StringBuilder(line)
         
         int offset = 0
         QuoteMask mask = QuoteMask.doubleQuote(line)
-        while (offset >= 0 && offset < sb.size()) {
+        while (offset < sb.size()) {
             offset = sb.indexOf("(", offset)
             if (offset < 0) {
                 break
             }
-            if (mask.masked(offset)) {
-                offset = offset + 1
-                continue
-            }
-            if (canSkip(offset)) {
+            if (mask.masked(offset) || 
+                canSkip(offset)) {
                 offset = offset + 1
                 continue
             }
             if (offset > 0 && Character.isWhitespace(sb.charAt(offset - 1))) {
-                int r = offset - 1
-                while(r >= 0 && Character.isWhitespace(sb.charAt(r))) {
-                    r = r - 1
-                }
-               if (r == -1) { // continued line
+                int r = lastNonWhiteSpace(line, offset)
+                if (r == -1) { // continued line
                     offset = offset + 1
                     continue
                 }
-                if (StringUtil.isControlKeyword(
-                    StringUtil.lastToken(sb.toString(), r + 1))) {
+
+                String lastToken = StringUtil.lastToken(line, r + 1)
+                if (StringUtil.isControlKeyword(lastToken)) {
                     offset = offset + 1
                     continue
                 } 
                 
                 if (Character.isLetter(line.charAt(r)) ||
                     Character.isDigit(line.charAt(r))) {
-                    int deleteIdx = offset - 1
-                    while (deleteIdx > r) {
-                        sb.deleteCharAt(deleteIdx)
-                        deleteIdx = deleteIdx - 1
-                    }
+                    deleteWhitespaceBackward(sb, r, offset)
                     offset = r + 2
                     continue
                 } else {
@@ -116,17 +126,13 @@ class LeftParenthesisRule implements SingleLineRule {
                     continue
                 }
             }
-            if (offset < sb.size() - 2 && Character.isWhitespace(sb.charAt(offset + 1)) ) {
-                int r2 = offset + 1
-                while (r2 < sb.size() - 1 && Character.isWhitespace(sb.charAt(r2))) {
-                    sb.deleteCharAt(r2)
-                }
-                offset = r2
-                continue
+            if (offset < sb.size() - 1 && 
+                Character.isWhitespace(sb.charAt(offset + 1)) ) {
+                deleteWhitespaceForward(sb, offset + 1)
             }
             offset = offset + 1
         }
-        return sb.toString();
+        sb.toString();
     }
 
     void setSkip(Closure isComment) {
@@ -159,7 +165,6 @@ class NoLeadingSpaceRule implements SingleLineRule {
         int offset = 0
         QuoteMask mask = QuoteMask.doubleQuote(line)
 
-        println(line)
         while (offset >= 0 && offset < line.size()) {
             offset = line.indexOf(token, offset)
             if (offset < 0) {
@@ -325,11 +330,9 @@ class RequireLeadingSpaceRule implements SingleLineRule {
                 }
 
                 int r = offset - 2
-                println("start del")
                 while (Character.isWhitespace(sb.charAt(r))) {
                     sb.deleteCharAt(r)
                     r = r - 1
-                    println(sb)
                 }
                 offset = r + 3
                 continue

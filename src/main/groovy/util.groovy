@@ -71,9 +71,9 @@ class QuoteMask {
 }
 
 /** Utility for stirng manipulations */
-@CompileStatic
+
 class StringUtil {
-    static lastToken(String s, int offset) {
+    static String lastToken(String s, int offset) {
         int i = offset - 1
         while (i >= 0 && !Character.isWhitespace(s.charAt(i))) {
             i = i - 1
@@ -85,7 +85,8 @@ class StringUtil {
         }
     }
 
-    static Boolean isControlKeyword(String s) {
+    @CompileStatic
+    static boolean isControlKeyword(String s) {
         return s.equals("if") || s.equals("while") || s.equals("for")
     }
 

@@ -19,8 +19,8 @@ class ParenthesisTest {
         SingleLineRule rule = new LeftParenthesisRule()
 
         assertThat(rule.analyze(line).passed(), is(true))
+        assertThat(rule.canFix(line), is(true))
     } 
-
 
     @Test
     void testLeftParenthesisPass2() {
@@ -69,7 +69,7 @@ class ParenthesisTest {
 
     @Test
     void testLeftParenthesisWithOperator() {
-        String line = 'Integer a = a * (b + c);'
+        String line = 'Integer a = (a + b) * (b + c);'
         SingleLineRule rule = new LeftParenthesisRule()
 
         assertThat(rule.analyze(line).passed(), is(true))
@@ -83,6 +83,15 @@ class ParenthesisTest {
 
         assertThat(rule.analyze(line).passed(), is(true))
         assertThat(rule.fix(line), is(line))
+    }
+
+    @Test
+    void testLeftParenthesisTrailingSpaceAfterOpen() {
+        String line = '  int x = f(   ' // trailing space
+        SingleLineRule rule = new LeftParenthesisRule()
+
+        assertThat(rule.analyze(line).passed(), is(false))
+        assertThat(rule.fix(line), is('  int x = f('))
     }
 
     @Test
