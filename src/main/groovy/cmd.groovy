@@ -1,7 +1,6 @@
 package me.zhihan.javastyler
 
-import java.util.List
-
+import groovy.transform.CompileStatic
 import org.apache.commons.cli.Options
 import org.apache.commons.cli.CommandLineParser
 import org.apache.commons.cli.CommandLine
@@ -14,10 +13,12 @@ abstract class Diagnostics {
 }
 
 /**
- * Diagnostics 
+ * Diagnostics class
  * Either pass or fail.
  */
+@CompileStatic
 class Pass extends Diagnostics {
+    /** Whether it is a pass. Used for tests. */
     Boolean passed() {
         return true
     }
@@ -28,6 +29,7 @@ class Pass extends Diagnostics {
 }
 
 /** Failed diagnostic */
+@CompileStatic
 class Fail extends Diagnostics {
     String msg
     Boolean passed() {
@@ -40,9 +42,11 @@ class Fail extends Diagnostics {
 }
 
 /** A diagnostic with line numbers attached */
+@CompileStatic
 class FailWithLineNumber extends Diagnostics {
     String rule
     List<Integer> lines
+    String msg
 
     Boolean passed() {
         return false
@@ -57,6 +61,7 @@ class FailWithLineNumber extends Diagnostics {
  * Main entry of the analysis 
  */
 class Tool {
+    /** Print the help message of the tool. */
     static void printHelp(Options options) {
       HelpFormatter fmt = new HelpFormatter()
       fmt.printHelp("Tool", options)  

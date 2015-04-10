@@ -34,6 +34,10 @@ class SingleLineTest {
         SingleLineRule rule = new TrailingSpaceRule()
         
         assertThat(rule.analyze(line).passed(), is(true))
+
+        line = ""
+        assertThat(rule.analyze(line).passed(), is(true))
+        assertThat(rule.fix(line), is(""))
     }
 
     @Test
@@ -42,8 +46,8 @@ class SingleLineTest {
         SingleLineRule rule = new TrailingSpaceRule()
         
         assertThat(rule.analyze(line).passed(), is(false))
-        String fixed = rule.fix(line)
-        assertThat(fixed, is("Integer x = 1;"))
+        assertThat(rule.canFix(line), is(true))
+        assertThat(rule.fix(line), is("Integer x = 1;"))
     }
 
     @Test
@@ -95,6 +99,7 @@ class SingleLineTest {
         SingleLineRule rule = new LeadingTabRule()
 
         assertThat(rule.analyze(line).passed(), is(false))
+        assertThat(rule.canFix(line), is(true))
         assertThat(rule.fix(line), is("      Integer i;"))
     }  
 }

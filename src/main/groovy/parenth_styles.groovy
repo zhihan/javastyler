@@ -13,14 +13,6 @@ class LeftParenthesisRule implements SingleLineRule {
     // By default do not ignore anything
     Closure canSkip = { col -> false };
 
-    private int lastNonWhiteSpace(String line, int offset) {
-        int pos = offset - 1
-        while(pos >= 0 && Character.isWhitespace(line.charAt(pos))) {
-            pos = pos - 1
-        }
-        pos
-    }
-
      /** Analyzes a single line and look for left parenthesis problems. */
     Diagnostics analyze(String line) {
         int offset = 0
@@ -39,7 +31,7 @@ class LeftParenthesisRule implements SingleLineRule {
 
             if (offset > 0 && 
                 Character.isWhitespace(line.charAt(offset - 1))) {
-                int r = lastNonWhiteSpace(line, offset)
+                int r = StringUtil.lastNonWhitespace(line, offset)
                 if (r == -1) { // continued line
                     offset = offset + 1
                     continue
@@ -104,7 +96,7 @@ class LeftParenthesisRule implements SingleLineRule {
                 continue
             }
             if (offset > 0 && Character.isWhitespace(sb.charAt(offset - 1))) {
-                int r = lastNonWhiteSpace(line, offset)
+                int r = StringUtil.lastNonWhitespace(line, offset)
                 if (r == -1) { // continued line
                     offset = offset + 1
                     continue
@@ -170,20 +162,14 @@ class NoLeadingSpaceRule implements SingleLineRule {
             if (offset < 0) {
                 break
             }
-            if (mask.masked(offset)) {
-                offset = offset + 1
-                continue
-            }
-            if (canSkip(offset)) {
+            if (mask.masked(offset) ||
+                canSkip(offset)) {
                 offset = offset + 1
                 continue
             }
 
             if (offset > 0 && Character.isWhitespace(line.charAt(offset - 1))) {
-                int r = offset - 1
-                while(r >= 0 && Character.isWhitespace(line.charAt(r))) {
-                    r = r - 1
-                }
+                int r = StringUtil.lastNonWhitespace(line, offset)
                 if (r == -1) { // closing line
                     offset = offset + 1
                     continue
@@ -197,6 +183,14 @@ class NoLeadingSpaceRule implements SingleLineRule {
         return new Pass()
     }
 
+    private void deleteRange(StringBuffer sb, int r, int offset) {
+        int numDeleted = 0 
+        while (numDeleted < offset - r - 1) {
+            sb.deleteCharAt(r + 1)
+            numDeleted = numDeleted + 1
+        }
+    }
+
     String fix(String line) {
         int offset = 0
         QuoteMask mask = QuoteMask.doubleQuote(line)
@@ -207,29 +201,18 @@ class NoLeadingSpaceRule implements SingleLineRule {
             if (offset <0) {
                 break
             }
-            if (mask.masked(offset)) {
-                offset = offset + 1
-                continue
-            }
-            if (canSkip(offset)) {
+            if (mask.masked(offset) || canSkip(offset)) {
                 offset = offset + 1
                 continue
             }
 
             if (offset > 0 && Character.isWhitespace(sb.charAt(offset - 1))) {
-                int r = offset - 1
-                while(r >= 0 && Character.isWhitespace(sb.charAt(r))) {
-                    r = r - 1
-                }
+                int r = StringUtil.lastNonWhitespace(sb.toString(), offset)
                 if (r == -1) { // closing line
                     offset = offset + 1
                     continue
                 } else {
-                    int numDeleted
-                    while (numDeleted < offset - r - 1) {
-                        sb.deleteCharAt(r + 1)
-                        numDeleted = numDeleted + 1
-                    }
+                    deleteRange(sb, r, offset)
                     offset = r + 2
                     continue
                 }
@@ -237,7 +220,6 @@ class NoLeadingSpaceRule implements SingleLineRule {
             offset = offset + 1
         }
         return sb.toString()
-        return new Pass()
     }
 
     static SingleLineRule semiColonRule() {
@@ -249,12 +231,18 @@ class NoLeadingSpaceRule implements SingleLineRule {
     }
 }
 
+/** Rules that require leading spaces. */
+@CompileStatic
 class RequireLeadingSpaceRule implements SingleLineRule {
     String token
     // By default do not ignore anything
     Closure canSkip = { col -> false };
     void setSkip(Closure isComment) {
         canSkip = isComment
+    }
+
+    boolean isIndentation(String s, int offset) {
+        (s.substring(0, offset).trim().size() == 0 ) 
     }
 
     Diagnostics analyze(String line) {
@@ -266,23 +254,21 @@ class RequireLeadingSpaceRule implements SingleLineRule {
             if (offset < 0) {
                 return new Pass()
             }
-            if (mask.masked(offset)) {
-                offset = offset + 1
-                continue
-            }
-            if (canSkip(offset)) {
+            if (mask.masked(offset) ||
+                canSkip(offset) ||
+                isIndentation(line, offset)) {
                 offset += 1
                 continue
             }
 
             if (offset > 0 && !Character.isWhitespace(line.charAt(offset - 1))) {
-                return new Fail(msg: "Does not have space before {")
+                return new Fail(msg: "Does not have space before " + token)
             } 
 
             if (offset > 1 && 
                 Character.isWhitespace(line.charAt(offset - 1)) &&
                 Character.isWhitespace(line.charAt(offset - 2))) {
-                return new Fail(msg: "Has more than one space before {")
+                return new Fail(msg: "Has more than one space before " + token)
             } else {
                 offset = offset + 1
             }
@@ -304,15 +290,11 @@ class RequireLeadingSpaceRule implements SingleLineRule {
             if (offset < 0) {
                 break
             }
-            if (mask.masked(offset)) {
-                offset = offset + 1
-                continue
-            }
-           if (canSkip(offset)) {
+            if (mask.masked(offset) || canSkip(offset) || 
+                isIndentation(sb.toString(), offset)) {
                 offset += 1
                 continue
             }
-
 
             if (offset > 0 && !Character.isWhitespace(sb.charAt(offset - 1))) {
                 sb.insert(offset, ' ')
@@ -323,12 +305,7 @@ class RequireLeadingSpaceRule implements SingleLineRule {
             if (offset > 1 && 
                 Character.isWhitespace(sb.charAt(offset - 1)) &&
                 Character.isWhitespace(sb.charAt(offset - 2))) {
-                if (sb.substring(0, offset).trim().size() == 0 ) {
-                    // All whitespace before {
-                    offset = offset + 1
-                    continue
-                }
-
+                
                 int r = offset - 2
                 while (Character.isWhitespace(sb.charAt(r))) {
                     sb.deleteCharAt(r)

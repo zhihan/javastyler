@@ -59,6 +59,7 @@ class LineWidthRule implements SingleLineRule {
   *
   * No trailing whitespace is allowed. 
   */
+@CompileStatic  
 class TrailingSpaceRule implements SingleLineRule {
     Diagnostics analyze(String line ) {
         if (line.size() == 0) {
@@ -76,20 +77,14 @@ class TrailingSpaceRule implements SingleLineRule {
     }
 
     String fix(String line) {
-        if (line.size() == 0) {
-            return new Pass()
-        }
         int i = line.size() - 1
-        while (Character.isWhitespace(line.charAt(i)) && i > 0) {
+        while (i >=0 && Character.isWhitespace(line.charAt(i))) {
             i = i - 1;
         }
         line.substring(0, i + 1)
     }
 
-    void setSkip(Closure isComment) {
-    }
-
-
+    void setSkip(Closure notUsed) {} // Must implement
 }
 
 /** 
@@ -97,6 +92,7 @@ class TrailingSpaceRule implements SingleLineRule {
   *
   * No tab should appear before non-whitespace characters.
   */
+@CompileStatic
 class LeadingTabRule implements SingleLineRule {
     Diagnostics analyze(String line) {
         int i = 0

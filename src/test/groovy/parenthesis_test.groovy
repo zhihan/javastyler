@@ -132,6 +132,15 @@ class ParenthesisTest {
     } 
 
     @Test
+    void testSemicolonPassIfNoneFound() {
+        String line = ' if (x == 0)' // continued line
+        SingleLineRule rule = NoLeadingSpaceRule.semiColonRule()
+
+        assertThat(rule.analyze(line).passed(), is(true))
+        assertThat(rule.fix(line), is(line))
+    } 
+
+    @Test
     void testSemicolonPassIfEmptyLine() {
         String line = '    ;' // empty line
         SingleLineRule rule = NoLeadingSpaceRule.semiColonRule()
@@ -164,6 +173,7 @@ class ParenthesisTest {
         SingleLineRule rule = NoLeadingSpaceRule.rightParenthesisRule()
 
         assertThat(rule.analyze(line).passed(), is(false))
+        assertThat(rule.canFix(line), is(true))
         assertThat(rule.fix(line), is('  Integer i = f();'))
     }
 
@@ -182,6 +192,7 @@ class ParenthesisTest {
         SingleLineRule rule = RequireLeadingSpaceRule.openBracketRule()
 
         assertThat(rule.analyze(line).passed(), is(false))
+        assertThat(rule.canFix(line), is(true))
         assertThat(rule.fix(line), is("  void fun() {"))
     }
 
@@ -192,5 +203,22 @@ class ParenthesisTest {
 
         assertThat(rule.analyze(line).passed(), is(false))
         assertThat(rule.fix(line), is("  void fun() {"))
+    }
+    @Test
+    void testOpenBracketShouldIgnoreQuoted() {
+        String line = "  void fun()\"    {\""
+        SingleLineRule rule = RequireLeadingSpaceRule.openBracketRule()
+
+        assertThat(rule.analyze(line).passed(), is(true))
+        assertThat(rule.fix(line), is(line))
+    }
+
+    @Test
+    void testOpenBracketShouldNotFixIndent() {
+        String line = "  {"
+        SingleLineRule rule = RequireLeadingSpaceRule.openBracketRule()
+
+        assertThat(rule.analyze(line).passed(), is(true))
+        assertThat(rule.fix(line), is(line))
     }
 }

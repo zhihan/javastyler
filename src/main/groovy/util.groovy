@@ -34,8 +34,7 @@ class QuoteMask {
     List<PairInt> masks;
 
     static Pattern doubleQuoteString = ~/"([^"]|\")*"/
-    static Pattern singleQuoteString = ~/'([^']|\')*'/
-
+    
     private static QuoteMask quote(String line, Pattern pattern) {
         QuoteMask result = new QuoteMask()
         result.masks = []
@@ -49,10 +48,6 @@ class QuoteMask {
 
     static QuoteMask doubleQuote(String line) {
         quote(line, doubleQuoteString)
-    }
-
-    static QuoteMask singleQuote(String line) {
-        quote(line, singleQuoteString)
     }
 
     // Visible for tests
@@ -71,15 +66,20 @@ class QuoteMask {
 }
 
 /** Utility for stirng manipulations */
-
+@CompileStatic
 class StringUtil {
+    /** 
+     * Returns the last token preceding the offset in the string. 
+     * assumes the string at (offset - 1) is non-whitespace. Returns
+     * empty if char at offset is whitespace.
+     */
     static String lastToken(String s, int offset) {
         int i = offset - 1
         while (i >= 0 && !Character.isWhitespace(s.charAt(i))) {
             i = i - 1
         }
-        if (i == 0) {
-            s
+        if (i == -1) {
+            s.substring(0, offset)
         } else {
             s.substring(i+1, offset)
         }
@@ -98,5 +98,13 @@ class StringUtil {
         } else {
             ""
         }
+    }
+
+    static int lastNonWhitespace(String s, int offset) {
+        int pos = offset - 1
+        while(pos >= 0 && Character.isWhitespace(s.charAt(pos))) {
+            pos = pos - 1
+        }
+        pos
     }
 }

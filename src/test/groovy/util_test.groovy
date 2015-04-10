@@ -12,6 +12,14 @@ class UtilTest {
         assertThat(StringUtil.lastToken(a, 7), is("cde"))
         assertThat(StringUtil.lastToken(a, 8), is(""))
         assertThat(StringUtil.lastToken(a, 9), is("f"))
+        assertThat(StringUtil.lastToken(a, 3), is("abc"))
+    }
+
+    @Test
+    void testLastNonWhitespace() {
+        String a = "abc cd "
+        assertThat(StringUtil.lastNonWhitespace(a, 6), is(5))
+        assertThat(StringUtil.lastNonWhitespace(a, 2), is(1))
     }
 
     @Test
