@@ -20,7 +20,7 @@ class CommandTest {
     void testMultiRuleAnalyze() {
         URL url = ClassLoader.getSystemClassLoader().getResource("test_data1.java")
         List<String> lines = url.readLines()
-        List<Diagnostics> diag = Tool.analyze(lines, [new TrailingSpaceRule()])
+        List<Diagnostics> diag = Tool.analyzeSingle(lines, [new TrailingSpaceRule()])
 
         assertThat(diag.get(0).passed(), is(false))
         assertThat(diag.get(0).lines, is([0, 2]))

@@ -78,6 +78,12 @@ class Tool {
         ]
     }
 
+    static List<MultiLineRule> multiLineRules() {
+        [
+            new EmptyLinesRule()
+        ]
+    }
+
     static void main(String[] args) {
         Options options = new Options()
         options.addOption("f", "file", true, "Enter file name")
@@ -95,17 +101,24 @@ class Tool {
         if (cmd.hasOption("f")) {
             String fileName = cmd.getOptionValue("f")
             List<String> lines = new File(fileName).readLines()
-            List<Diagnostics> result = analyze(lines, singleLineRules())
+
+            List<Diagnostics> result = analyzeSingle(lines, singleLineRules())
+            report(result)
+
+            result = analyzeMulti(lines, multiLineRules())
             report(result)
         }
     }
 
-
+    @CompileStatic
     static void report(List<Diagnostics> results) {
-        for (diag in results) {
+        for (Diagnostics diag in results) {
             if (!diag.passed()) {
-                String lineNos = diag.lines.join(",")
-                println("Problem found $diag.rule at $lineNos")
+                FailWithLineNumber d = diag as FailWithLineNumber
+                String lineNos = d.lines
+                    .collect{int i -> i+1}  // Convert from 0-based to 1-based indexing
+                    .join(",")
+                println("Problem found $d.rule at $lineNos")
             }
         }
     }
@@ -113,6 +126,7 @@ class Tool {
     /**
      * Analyze the whole file using a single line rule.
      */
+    @CompileStatic
     static Diagnostics analyze(List<String> lines, SingleLineRule rule) {
         List<Integer> problems = []
         List<Diagnostics> diags = []
@@ -121,7 +135,7 @@ class Tool {
 
         for (int i = 0; i < lines.size(); i++) {
             // Set a filter on whether to skip in the current line.
-            rule.setSkip{ col -> Comment.inComment(comments, i, col) }
+            rule.setSkip{ int col -> Comment.inComment(comments, i, col) }
             Diagnostics diag = rule.analyze(lines.get(i))
             if (!diag.passed()) {
                 problems.add(i)
@@ -139,8 +153,9 @@ class Tool {
     /**
      * Analyze the whole file using multiple rules.
      */
-    static List<Diagnostics> analyze(List<String> lines, List<SingleLineRule> rules) {
-        rules.collect{rule -> analyze(lines, rule)}
+    @CompileStatic
+    static List<Diagnostics> analyzeSingle(List<String> lines, List<SingleLineRule> rules) {
+        rules.collect{SingleLineRule rule -> analyze(lines, rule)}
     }
 
     @CompileStatic
@@ -150,6 +165,11 @@ class Tool {
 
         rule.setCanSkip{ int row, int col -> Comment.inComment(comments, row, col) }
         return rule.analyze(lines)
+    }
+
+    @CompileStatic
+    static List<Diagnostics> analyzeMulti(List<String> lines, List<MultiLineRule> rules) {
+        rules.collect{MultiLineRule rule -> analyze(lines, rule)}
     }
 
     @CompileStatic
