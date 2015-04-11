@@ -69,13 +69,13 @@ final class Comment {
 
     /** Test if a position in a file is in comment. */ 
     @CompileStatic
-    static Boolean inComment(List<Comment> cmts, int row, int col) {
+    static Boolean inComment(List<Comment> cmts, Integer row, Integer col) {
         final LineColumn pos = new LineColumn(row, col)
         cmts.any{ it.contains(pos) }
     }
 
     /** A predicate that always returns false */
-    static Boolean alwaysFalse(int x) {
+    static Boolean alwaysFalse(Integer x) {
         return false
     } 
 }

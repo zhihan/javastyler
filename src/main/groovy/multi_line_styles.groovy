@@ -2,6 +2,7 @@ package me.zhihan.javastyler
 
 import groovy.transform.CompileStatic
 
+/** Rules that applies to multiple lines. */
 interface MultiLineRule {
     /** Analyze a file and provide diagnostics */
     Diagnostics analyze(List<String> lines)
@@ -10,7 +11,7 @@ interface MultiLineRule {
 
     List<String> fix(List<String> lines)
 
-    void setSkip(Closure isComment)
+    void setCanSkip(Closure isComment)
 }
 
 /**
@@ -20,7 +21,7 @@ interface MultiLineRule {
  */
 @CompileStatic
 class EmptyLinesRule implements MultiLineRule {
-    Closure canSkip = { col, row -> false }
+    private Closure canSkip = { int col, int row -> false }
 
     // Returns true if the line contains only whitespaces
     private Boolean isEmpty(String line) {
@@ -50,13 +51,14 @@ class EmptyLinesRule implements MultiLineRule {
         regions
     }
 
+    /** Analyze multiple lines. */
     Diagnostics analyze(List<String> lines) {
         List<PairInt> regions = findRegions(lines)
         if (regions.empty) {
             return new Pass()
         } else {
             List<Integer> problems = regions.collect{ it.start }
-            return new FailWithLineNumber(rule:this.class.name, lines: problems)
+            return new FailWithLineNumber(rule: this.class.name, lines: problems)
         }
     }
 
@@ -64,6 +66,7 @@ class EmptyLinesRule implements MultiLineRule {
         true
     }
 
+    /** Fix multiple lines. */
     List<String> fix(List<String> lines) {
         List<Boolean> empty = lines.collect { isEmpty(it) }
         List<String> result = []
@@ -90,7 +93,7 @@ class EmptyLinesRule implements MultiLineRule {
         result
     }
 
-    void setSkip(Closure isComment) {
+    void setCanSkip(Closure isComment) {
         canSkip = isComment
     }
 }
