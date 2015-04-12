@@ -214,7 +214,9 @@ class Tool {
 
     @CompileStatic
     static List<Diagnostics> analyzeMulti(List<String> lines, List<MultiLineRule> rules) {
-        rules.collect{MultiLineRule rule -> analyze(lines, rule)}
+        rules
+            .collect{MultiLineRule rule -> analyze(lines, rule)}
+            .findAll{Diagnostics diag -> !diag.passed()}
     }
 
     /** Fix the source file using a multi-line rule.*/

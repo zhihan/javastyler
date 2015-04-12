@@ -23,6 +23,22 @@ class CommandTest {
     }
 
     @Test
+    void testSingleLineRuleAnalyzePassOnEmpty() {
+        List<String> lines = [""]
+        List<Diagnostics> diag = Tool.analyzeSingle(lines, Tool.singleLineRules())
+
+        assertThat(diag, is(empty()))
+    }
+    
+    @Test
+    void testMultiLineRuleAnalyzePassOnEmpty() {
+        List<String> lines = [""]
+        List<Diagnostics> diag = Tool.analyzeMulti(lines, Tool.multiLineRules())
+
+        assertThat(diag, is(empty()))
+    }
+
+    @Test
     void testMultiRuleAnalyze() {
         URL url = ClassLoader.getSystemClassLoader().getResource("test_data1.java")
         List<String> lines = url.readLines()
