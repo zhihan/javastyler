@@ -7,6 +7,11 @@ import org.apache.commons.cli.CommandLine
 import org.apache.commons.cli.GnuParser
 import org.apache.commons.cli.HelpFormatter
 
+import java.nio.charset.Charset
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
+
 abstract class Diagnostics {
     abstract Boolean passed()
     abstract String message()
@@ -67,7 +72,7 @@ class Tool {
       fmt.printHelp("Tool", options)  
     }
 
-    static List<SingleLineRule> singleLineRules() {
+    private static List<SingleLineRule> singleLineRules() {
         [ 
             new TrailingSpaceRule(), 
             new LineWidthRule(),
@@ -78,7 +83,7 @@ class Tool {
         ]
     }
 
-    static List<MultiLineRule> multiLineRules() {
+    private static List<MultiLineRule> multiLineRules() {
         [
             new EmptyLinesRule()
         ]
@@ -88,6 +93,7 @@ class Tool {
         Options options = new Options()
         options.addOption("f", "file", true, "Enter file name")
         options.addOption("h", "help", false, "Display help")
+        options.addOption("c", "change", false, "Change the file (a backup will be saved)" )
 
         CommandLineParser parser = new GnuParser();
         CommandLine cmd = parser.parse( options, args);
@@ -98,15 +104,25 @@ class Tool {
         } 
 
         // Analyze a file
+        Boolean hasFailed = false
         if (cmd.hasOption("f")) {
             String fileName = cmd.getOptionValue("f")
             List<String> lines = new File(fileName).readLines()
 
             List<Diagnostics> result = analyzeSingle(lines, singleLineRules())
+            hasFailed = !result.isEmpty()
             report(result)
 
             result = analyzeMulti(lines, multiLineRules())
             report(result)
+
+            if (cmd.hasOption("c") && hasFailed) {
+                Path theFile = Paths.get(fileName)
+                List<String> fixed = fixSingle(lines, singleLineRules())
+
+                Files.move(theFile, theFile.resolveSibling(fileName + ".bak"))
+                Files.write(theFile, fixed, Charset.forName("US-ASCII"))
+            }
         }
     }
 
@@ -151,11 +167,40 @@ class Tool {
     }
 
     /**
+     * Analyze the whole file using a single line rule.
+     */
+    @CompileStatic
+    static List<String> fix(List<String> lines, SingleLineRule rule) {
+        CommentScanner scanner = new CommentScanner()
+        final List<Comment> comments = scanner.scan(lines)
+
+        List<String> result = new ArrayList<String>()
+        lines.eachWithIndex{ String line, int i -> 
+            // Set a filter on whether to skip in the current line.
+            rule.setSkip{ int col -> Comment.inComment(comments, i, col) }
+            String r = rule.fix(line)
+            result.add(r)
+        }
+        result
+    }
+
+    @CompileStatic
+    static List<String> fixSingle(List<String> lines, List<SingleLineRule> rules) {
+        List<String> results = lines
+        for (SingleLineRule rule in rules) {
+            results = fix(results, rule)
+        }
+        results
+    }
+
+    /**
      * Analyze the whole file using multiple rules.
      */
     @CompileStatic
     static List<Diagnostics> analyzeSingle(List<String> lines, List<SingleLineRule> rules) {
-        rules.collect{SingleLineRule rule -> analyze(lines, rule)}
+        rules
+            .collect{SingleLineRule rule -> analyze(lines, rule)}
+            .findAll{Diagnostics diag -> !diag.passed()}
     }
 
     @CompileStatic
@@ -172,6 +217,7 @@ class Tool {
         rules.collect{MultiLineRule rule -> analyze(lines, rule)}
     }
 
+    /** Fix the source file using a multi-line rule.*/
     @CompileStatic
     static List<String> fix(List<String> lines, MultiLineRule rule) {
         CommentScanner scanner = new CommentScanner()

@@ -14,6 +14,13 @@ class CommandTest {
 
         assertThat(diag.passed(), is(false))
         assertThat(diag.lines, is([0, 2]))
+
+        List<String> results = Tool.fix(lines, new TrailingSpaceRule())
+        println(results)
+        assertThat(results, is([
+            "Integer a = 1;",
+            "Integer b = 2;", 
+            "Integer c = 3;"]))
     }
 
     @Test
