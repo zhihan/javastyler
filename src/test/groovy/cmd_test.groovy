@@ -16,7 +16,6 @@ class CommandTest {
         assertThat(diag.lines, is([0, 2]))
 
         List<String> results = Tool.fix(lines, new TrailingSpaceRule())
-        println(results)
         assertThat(results, is([
             "Integer a = 1;",
             "Integer b = 2;", 
@@ -31,6 +30,12 @@ class CommandTest {
 
         assertThat(diag.get(0).passed(), is(false))
         assertThat(diag.get(0).lines, is([0, 2]))
+        List<String> results = Tool.fixSingle(lines, [new TrailingSpaceRule()])
+        assertThat(results, is([
+            "Integer a = 1;",
+            "Integer b = 2;", 
+            "Integer c = 3;"]))
+
     }
 
     @Test
@@ -41,6 +46,15 @@ class CommandTest {
 
         assertThat(diag.passed(), is(false))
         assertThat(diag.lines, is([5]))
+        List<String> results = Tool.fix(lines, new LeftParenthesisRule())
+        assertThat(results, is([
+            " /* ",
+            " Commented out area should not count",
+            " String a = f  ();",
+            " */",
+            "",
+            "String b = f();"
+            ]))
     }
 
     @Test
@@ -51,7 +65,16 @@ class CommandTest {
 
         assertThat(diag.passed(), is(false))
         assertThat(diag.lines, is([5]))
-       
+
+        List<String> results = Tool.fix(lines, NoLeadingSpaceRule.semiColonRule())
+        assertThat(results, is([
+            "/*",
+            "String a = f()  ;",
+            "*/",
+            "String b // = f()  ;",
+            "",
+            "String b = f ();"
+            ]))  
     }
 
     @Test
@@ -62,6 +85,15 @@ class CommandTest {
 
         assertThat(diag.passed(), is(false))
         assertThat(diag.lines, is([5]))
-       
+
+        List<String> results = Tool.fix(lines, RequireLeadingSpaceRule.openBracketRule())
+        assertThat(results, is([
+            "/*",
+            "String a = f(){}  ;",
+            "*/",
+            "String b // = f(){}  ;",
+            "",
+            "String b = f () {} ;"
+            ]))       
     }
 } 
