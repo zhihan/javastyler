@@ -126,6 +126,7 @@ class Tool {
         }
     }
 
+    /** Report the failed diagnostics in the results. */
     @CompileStatic
     static void report(List<Diagnostics> results) {
         for (Diagnostics diag in results) {
@@ -184,6 +185,7 @@ class Tool {
         result
     }
 
+    /** Fix the source code by applying a series of SingleLineRule's. */
     @CompileStatic
     static List<String> fixSingle(List<String> lines, List<SingleLineRule> rules) {
         List<String> results = lines
@@ -203,6 +205,7 @@ class Tool {
             .findAll{Diagnostics diag -> !diag.passed()}
     }
 
+    /** Analyze the source code using a MultiLineRule. */
     @CompileStatic
     static Diagnostics analyze(List<String> lines, MultiLineRule rule) {
         CommentScanner scanner = new CommentScanner()
@@ -212,6 +215,7 @@ class Tool {
         return rule.analyze(lines)
     }
 
+    /** Analyzes source code using a series of MultiLineRule's. */
     @CompileStatic
     static List<Diagnostics> analyzeMulti(List<String> lines, List<MultiLineRule> rules) {
         rules
