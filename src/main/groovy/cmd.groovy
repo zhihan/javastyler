@@ -89,6 +89,22 @@ class Tool {
         ]
     }
 
+    /**
+     * Analyze the source code with all the rules and report to command prompt.
+     */
+    @CompileStatic
+    static boolean analyzeAndReport(List<String> lines) {
+        boolean hasFailed = false
+        List<Diagnostics> result = analyzeSingle(lines, singleLineRules())
+        hasFailed = !result.isEmpty()
+        report(result)
+
+        result = analyzeMulti(lines, multiLineRules())
+        hasFailed = hasFailed | !result.isEmpty()
+        report(result)
+        hasFailed
+    }
+
     static void main(String[] args) {
         Options options = new Options()
         options.addOption("f", "file", true, "Enter file name")
@@ -96,7 +112,7 @@ class Tool {
         options.addOption("c", "change", false, "Change the file (a backup will be saved)" )
 
         CommandLineParser parser = new GnuParser();
-        CommandLine cmd = parser.parse( options, args);
+        CommandLine cmd = parser.parse(options, args);
 
         if (cmd.hasOption("h")) {
             printHelp(options)
@@ -104,18 +120,11 @@ class Tool {
         } 
 
         // Analyze a file
-        Boolean hasFailed = false
         if (cmd.hasOption("f")) {
             String fileName = cmd.getOptionValue("f")
             List<String> lines = new File(fileName).readLines()
-
-            List<Diagnostics> result = analyzeSingle(lines, singleLineRules())
-            hasFailed = !result.isEmpty()
-            report(result)
-
-            result = analyzeMulti(lines, multiLineRules())
-            report(result)
-
+            Boolean hasFailed = analyzeAndReport(lines)
+        
             if (cmd.hasOption("c") && hasFailed) {
                 Path theFile = Paths.get(fileName)
                 List<String> fixed = fixSingle(lines, singleLineRules())

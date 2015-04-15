@@ -112,4 +112,16 @@ class CommandTest {
             "String b = f () {} ;"
             ]))       
     }
+
+    @Test
+    void testAllPassEmptyLine() {
+        List<String> lines = [""];
+        assertThat(Tool.analyzeAndReport(lines), is(false))
+    }
+
+    @Test
+    void testAllFailMultiEmptyLine() {
+        List<String> lines = ["", "", "int x = 1;"];
+        assertThat(Tool.analyzeAndReport(lines), is(true))
+    }
 } 
