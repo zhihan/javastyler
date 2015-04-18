@@ -124,4 +124,10 @@ class CommandTest {
         List<String> lines = ["", "", "int x = 1;"];
         assertThat(Tool.analyzeAndReport(lines), is(true))
     }
+
+    @Test
+    void testAllFixEmptyLine() {
+        List<String> lines = [""];
+        assertThat(Tool.fixAll(lines), is(lines))
+    }
 } 

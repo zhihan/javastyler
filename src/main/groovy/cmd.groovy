@@ -19,7 +19,8 @@ abstract class Diagnostics {
 
 /**
  * Diagnostics class
- * Either pass or fail.
+ *
+ * <p> Either pass or fail.
  */
 @CompileStatic
 class Pass extends Diagnostics {
@@ -105,6 +106,12 @@ class Tool {
         hasFailed
     }
 
+    @CompileStatic
+    static List<String> fixAll(List<String> lines) {
+        List<String> fixed = fixSingle(lines, singleLineRules())
+        fixMulti(lines, multiLineRules())
+    }
+
     static void main(String[] args) {
         Options options = new Options()
         options.addOption("f", "file", true, "Enter file name")
@@ -127,7 +134,7 @@ class Tool {
         
             if (cmd.hasOption("c") && hasFailed) {
                 Path theFile = Paths.get(fileName)
-                List<String> fixed = fixSingle(lines, singleLineRules())
+                List<String> fixed = fixAll(lines)
 
                 Files.move(theFile, theFile.resolveSibling(fileName + ".bak"))
                 Files.write(theFile, fixed, Charset.forName("US-ASCII"))
@@ -245,5 +252,16 @@ class Tool {
             lines
         }
     }
+
+     /** Fix the source code by applying a series of MultiLineRule's. */
+    @CompileStatic
+    static List<String> fixMulti(List<String> lines, List<MultiLineRule> rules) {
+        List<String> results = lines
+        for (MultiLineRule rule in rules) {
+            results = fix(results, rule)
+        }
+        results
+    }
+
 } 
 
