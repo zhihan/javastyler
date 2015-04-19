@@ -103,3 +103,31 @@ class SingleLineTest {
         assertThat(rule.fix(line), is("      Integer i;"))
     }  
 }
+
+class ImportStatementTest {
+    @Test
+    void testPass() {
+        String line = "import a;"
+        SingleLineRule rule = new ImportNoWildcardRule()
+
+        assertThat(rule.canFix(line), is(false))
+        assertThat(rule.analyze(line).passed(), is(true))
+    }
+
+    @Test
+    void testPassIfNoImports() {
+        String line = "a = 1;"
+        SingleLineRule rule = new ImportNoWildcardRule()
+
+        assertThat(rule.analyze(line).passed(), is(true))
+    }
+
+    @Test
+    void testFail() {
+        String line = "import a.*;"
+        SingleLineRule rule = new ImportNoWildcardRule()
+
+        assertThat(rule.analyze(line).passed(), is(false))
+        assertThat(rule.analyze(line).msg.contains("wildcard"), is(true))
+    }
+}

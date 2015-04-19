@@ -66,13 +66,13 @@ class QuoteMask {
 }
 
 /** Utility for stirng manipulations */
-@CompileStatic
 class StringUtil {
     /** 
      * Returns the last token preceding the offset in the string. 
      * assumes the string at (offset - 1) is non-whitespace. Returns
      * empty if char at offset is whitespace.
      */
+    @CompileStatic
     static String lastToken(String s, int offset) {
         int i = offset - 1
         while (i >= 0 && !Character.isWhitespace(s.charAt(i))) {
@@ -86,10 +86,12 @@ class StringUtil {
     }
 
     @CompileStatic
+    /** If the string is a control flow keyword, e.g., 'if' or 'while'. */
     static boolean isControlKeyword(String s) {
         return s.equals("if") || s.equals("while") || s.equals("for")
     }
 
+    /** Returns the first token of the line. */
     static String findToken(String s) {
         Pattern pattern = ~/[^\s]+/
         Matcher matcher = pattern.matcher(s)

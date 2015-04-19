@@ -80,7 +80,8 @@ class Tool {
             new LeadingTabRule(),
             new LeftParenthesisRule(),
             NoLeadingSpaceRule.semiColonRule(),
-            NoLeadingSpaceRule.rightParenthesisRule()
+            NoLeadingSpaceRule.rightParenthesisRule(),
+            new ImportNoWildcardRule()
         ]
     }
 

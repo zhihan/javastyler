@@ -126,6 +126,34 @@ class LeadingTabRule implements SingleLineRule {
     }
     void setSkip(Closure isComment) {
     }
-
 }
+
+/** 
+ * No whilecard in import statements
+ */ 
+@CompileStatic
+class ImportNoWildcardRule implements SingleLineRule {
+    Boolean canFix(String unused) {
+        false
+    }
+
+    String fix(String line) {
+        line
+    }
+
+    Diagnostics analyze(String line) {
+        String firstToken = StringUtil.findToken(line)
+        if (firstToken.equals("import") &&
+            line.contains("*")) {
+            new Fail(msg: "Cannot use wildcard in import statement")
+        } else {
+            new Pass()
+        }
+    }
+    void setSkip(Closure isComment) {
+        // TODO(zhihan): Consider commented out import statements.
+    }
+} 
+
+
 

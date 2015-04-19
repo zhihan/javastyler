@@ -23,13 +23,6 @@ class UtilTest {
     }
 
     @Test
-    void testFirstToken() {
-        String a = " abc abc"
-        assertThat(StringUtil.findToken(a), is("abc"))
-        assertThat(StringUtil.findToken("   "), is(""))
-    }
-
-    @Test
     void testPairInt() {
         def x = new PairInt(start:0, end:0) 
         assertThat(x.isEmpty(), is(true))
@@ -41,5 +34,17 @@ class UtilTest {
         assertThat(y.between(0), is(true))
         assertThat(y.between(1), is(false))
         assertThat(y.between(-1), is(false))
+    }
+
+    @Test
+    void testFindToken() {
+        String a = " abc abc"
+        assertThat(StringUtil.findToken(a), is("abc"))
+        assertThat(StringUtil.findToken("   "), is(""))
+
+        assertThat(StringUtil.findToken("abc"), is("abc"))
+        assertThat(StringUtil.findToken("abc "), is("abc"))
+        assertThat(StringUtil.findToken(" abc "), is("abc"))
+        assertThat(StringUtil.findToken(" abc def"), is("abc"))
     }
 }
